@@ -1,3 +1,4 @@
+// frontend/src/components/LoginPage.js
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { loginUser } from '../redux/slices/authSlice'; // Import the Redux action
@@ -15,8 +16,8 @@ const LoginPage = () => {
         setError(''); // Clear previous errors
 
         try {
-            // Simulate API call to backend
-            const response = await fetch('http://localhost:3001/api/users/login', { // Updated API endpoint
+            // Make API call to backend login endpoint
+            const response = await fetch('http://localhost:3001/api/users/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -27,12 +28,13 @@ const LoginPage = () => {
             const data = await response.json();
 
             if (response.ok) {
-                dispatch(loginUser(data.user)); // Dispatch the Redux action
+                // Dispatch the Redux action to store user data
+                dispatch(loginUser(data)); // Assuming data contains the user object directly
             } else {
                 setError(data.message || 'Login failed. Please check your credentials.');
             }
         } catch (err) {
-            setError('Network error or server is not running or invalid credentials.');
+            setError('Network error or server is not running. Please check console for details.');
             console.error('Login error:', err);
         }
     };

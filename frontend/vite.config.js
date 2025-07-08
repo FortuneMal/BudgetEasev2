@@ -1,11 +1,10 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react'; // Make sure this line exists
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // Crucial: Tell esbuild to treat .js files as JSX
-  esbuild: {
-    loader: { '.js': 'jsx' },
-  },
+  // Removed the 'esbuild' configuration.
+  // The @vitejs/plugin-react should handle JSX in .jsx files automatically.
 });
+
