@@ -1,9 +1,9 @@
-// frontend/src/components/Dashboard.js
+// frontend/src/components/Dashboard.jsx
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchExpenses } from '../redux/slices/expensesSlice';
-import { fetchBudgets } from '../redux/slices/budgetsSlice';
-import { fetchGoals } from '../redux/slices/goalsSlice';
+import { fetchExpenses } from '../redux/slices/expensesSlice.jsx'; // Corrected extension
+import { fetchBudgets } from '../redux/slices/budgetsSlice.jsx';   // Corrected extension
+import { fetchGoals } from '../redux/slices/goalsSlice.jsx';     // Corrected extension
 // Assuming Navbar is now a separate component and handled in App.jsx routing
 
 const Dashboard = () => {
@@ -25,7 +25,7 @@ const Dashboard = () => {
     // Fetch expenses on component mount
     useEffect(() => {
         if (expensesStatus === 'idle' && user) {
-            dispatch(fetchExpenses()); // No userId needed here, backend uses mock or JWT
+            dispatch(fetchExpenses());
         }
     }, [expensesStatus, dispatch, user]);
 
@@ -45,13 +45,11 @@ const Dashboard = () => {
 
 
     if (!user) {
-        // This case should ideally be handled by your router's Navigate component
         return <p>Please log in to view the dashboard.</p>;
     }
 
     return (
         <div className="min-h-screen bg-blue-50 p-6 flex flex-col items-center">
-            {/* Header is now likely in App.js or a separate Layout component */}
             <header className="w-full max-w-6xl bg-white p-6 rounded-xl shadow-lg flex justify-between items-center mb-8 border-b-4 border-budget-blue">
                 <h1 className="text-4xl font-extrabold text-budget-blue-dark">
                     BudgetEase
@@ -60,7 +58,6 @@ const Dashboard = () => {
                     <span className="text-xl font-semibold text-budget-blue-dark">
                         Welcome, {user.name}!
                     </span>
-                    {/* Logout button will be in Navbar or a top-level component */}
                 </div>
             </header>
 
@@ -75,7 +72,7 @@ const Dashboard = () => {
                     {expensesStatus === 'failed' && <p className="text-red-600">Error: {expensesError}</p>}
                     {expensesStatus === 'succeeded' && expenses.length > 0 ? (
                         <ul className="list-disc list-inside text-gray-600 space-y-2">
-                            {expenses.slice(0, 3).map(exp => ( // Show first 3 for dashboard summary
+                            {expenses.slice(0, 3).map(exp => (
                                 <li key={exp._id}>
                                     {exp.description || exp.category}: ${exp.amount} on {new Date(exp.date).toLocaleDateString()}
                                 </li>
@@ -99,7 +96,7 @@ const Dashboard = () => {
                     {budgetsStatus === 'failed' && <p className="text-red-600">Error: {budgetsError}</p>}
                     {budgetsStatus === 'succeeded' && budgets.length > 0 ? (
                         <ul className="list-disc list-inside text-gray-600 space-y-2">
-                            {budgets.slice(0, 2).map(budget => ( // Show first 2 for dashboard summary
+                            {budgets.slice(0, 2).map(budget => (
                                 <li key={budget._id}>
                                     {budget.category} Budget: ${budget.limit}
                                 </li>
@@ -123,7 +120,7 @@ const Dashboard = () => {
                     {goalsStatus === 'failed' && <p className="text-red-600">Error: {goalsError}</p>}
                     {goalsStatus === 'succeeded' && goals.length > 0 ? (
                         <ul className="list-disc list-inside text-gray-600 space-y-2">
-                            {goals.slice(0, 2).map(goal => ( // Show first 2 for dashboard summary
+                            {goals.slice(0, 2).map(goal => (
                                 <li key={goal._id}>
                                     {goal.name}: ${goal.savedAmount} / ${goal.targetAmount}
                                 </li>
@@ -138,7 +135,6 @@ const Dashboard = () => {
                 </div>
 
                 {/* Placeholder for other cards (Recommendations, Currency Exchange, Security) */}
-                {/* ... (as in the original UserPage, but now potentially separate components) */}
             </main>
 
             {/* Footer */}
