@@ -7,14 +7,17 @@ const initialState = {
   error: null,
 };
 
-// Helper to get auth header
+// Helper to get auth header (ensure this is present in all slice files that make API calls)
 const getAuthHeader = (getState) => {
     const { auth } = getState();
     return auth.token ? { 'Authorization': `Bearer ${auth.token}` } : {};
+};
 
 // Async Thunk for fetching goals
 export const fetchGoals = createAsyncThunk('goals/fetchGoals', async (_, { getState }) => {
-  const response = await fetch('http://localhost:3001/api/goals');
+  const response = await fetch('http://localhost:3001/api/goals', {
+    headers: getAuthHeader(getState),
+  });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to fetch goals');
@@ -29,7 +32,7 @@ export const addGoal = createAsyncThunk('goals/addGoal', async (newGoal, { dispa
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // 'Authorization': `Bearer ${auth.token}` // Future: Send JWT token
+      ...getAuthHeader(getState),
     },
     body: JSON.stringify(newGoal),
   });
@@ -47,7 +50,7 @@ export const updateGoal = createAsyncThunk('goals/updateGoal', async (updatedGoa
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      // 'Authorization': `Bearer ${auth.token}` // Future: Send JWT token
+      ...getAuthHeader(getState),
     },
     body: JSON.stringify(updatedGoal),
   });
@@ -63,9 +66,7 @@ export const updateGoal = createAsyncThunk('goals/updateGoal', async (updatedGoa
 export const deleteGoal = createAsyncThunk('goals/deleteGoal', async (goalId, { dispatch, getState }) => {
   const response = await fetch(`http://localhost:3001/api/goals/${goalId}`, {
     method: 'DELETE',
-    headers: {
-      // 'Authorization': `Bearer ${auth.token}` // Future: Send JWT token
-    },
+    headers: getAuthHeader(getState),
   });
   if (!response.ok) {
     const errorData = await response.json();

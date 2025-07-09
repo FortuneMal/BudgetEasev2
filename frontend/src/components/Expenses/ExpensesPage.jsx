@@ -1,43 +1,20 @@
-// frontend/src/components/Expenses/ExpensesPage.js
+// frontend/src/components/Expenses/ExpensesPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchExpenses, addExpense, updateExpense, deleteExpense } from '../../redux/slices/expensesSlice';
-import ExpenseCategoryChart from './charts/ExpenseCategoryChart.jsx'; // Import the chart component
+import { fetchExpenses, addExpense, updateExpense, deleteExpense } from '../../redux/slices/expensesSlice.jsx'; // Ensure .jsx extension
+// Corrected import path for ExpenseCategoryChart
+import ExpenseCategoryChart from '../charts/ExpenseCategoryChart.jsx'; // Go up one level (..) then into charts
 
-const Dashboard = () => {
-    // ... (existing state and dispatch)
-
-    return (
-        <div className="min-h-screen bg-blue-50 p-6 flex flex-col items-center">
-            {/* ... (header and notifications) */}
-
-            <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* ... (Expense, Budget, Savings Goals cards) */}
-
-                <CurrencyConverter />
-
-                {/* Expense Chart Card */}
-                <ExpenseCategoryChart />
-
-                {/* Placeholder for other cards */}
-                {/* ... */}
-            </main>
-
-            {/* ... (footer) */}
-        </div>
-    );
-};
-
-const ExpensesPage = () => {
+const ExpensesPage = () => { // This component should be named ExpensesPage
     const dispatch = useDispatch();
     const expenses = useSelector(state => state.expenses.expenses);
     const expensesStatus = useSelector(state => state.expenses.status);
     const expensesError = useSelector(state => state.expenses.error);
-    const user = useSelector(state => state.auth.user); // Get user for context
+    const user = useSelector(state => state.auth.user);
 
     const [newExpense, setNewExpense] = useState({ amount: '', category: '', date: '', description: '' });
-    const [editingExpense, setEditingExpense] = useState(null); // State to hold expense being edited
-    const [showForm, setShowForm] = useState(false); // State to toggle form visibility
+    const [editingExpense, setEditingExpense] = useState(null);
+    const [showForm, setShowForm] = useState(false);
 
     // Fetch expenses when the component mounts or user changes
     useEffect(() => {
@@ -46,52 +23,46 @@ const ExpensesPage = () => {
         }
     }, [user, expensesStatus, dispatch]);
 
-    // Handle input changes for the form
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewExpense(prev => ({ ...prev, [name]: value }));
     };
 
-    // Handle adding/updating an expense
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             if (editingExpense) {
-                // Update existing expense
                 await dispatch(updateExpense({ _id: editingExpense._id, ...newExpense })).unwrap();
-                setEditingExpense(null); // Clear editing state
+                setEditingExpense(null);
             } else {
-                // Add new expense
-                await dispatch(addExpense(newExpense)).unwrap(); // .unwrap() to get the payload or throw error
+                await dispatch(addExpense(newExpense)).unwrap();
             }
-            setNewExpense({ amount: '', category: '', date: '', description: '' }); // Clear form
-            setShowForm(false); // Hide form after submission
+            setNewExpense({ amount: '', category: '', date: '', description: '' });
+            setShowForm(false);
         } catch (error) {
             console.error('Failed to save expense:', error);
-            alert(`Error saving expense: ${error.message}`); // Use a custom modal in a real app
+            alert(`Error saving expense: ${error.message}`);
         }
     };
 
-    // Set expense for editing
     const handleEditClick = (expense) => {
         setEditingExpense(expense);
         setNewExpense({
             amount: expense.amount,
             category: expense.category,
-            date: expense.date ? new Date(expense.date).toISOString().split('T')[0] : '', // Format date for input type="date"
+            date: expense.date ? new Date(expense.date).toISOString().split('T')[0] : '',
             description: expense.description
         });
-        setShowForm(true); // Show form for editing
+        setShowForm(true);
     };
 
-    // Handle deleting an expense
     const handleDeleteClick = async (expenseId) => {
-        if (window.confirm('Are you sure you want to delete this expense?')) { // Use custom modal in real app
+        if (window.confirm('Are you sure you want to delete this expense?')) {
             try {
                 await dispatch(deleteExpense(expenseId)).unwrap();
             } catch (error) {
                 console.error('Failed to delete expense:', error);
-                alert(`Error deleting expense: ${error.message}`); // Use a custom modal in a real app
+                alert(`Error deleting expense: ${error.message}`);
             }
         }
     };
@@ -108,7 +79,7 @@ const ExpensesPage = () => {
                 <button
                     onClick={() => {
                         setShowForm(!showForm);
-                        setEditingExpense(null); // Clear editing state when toggling form
+                        setEditingExpense(null);
                         setNewExpense({ amount: '', category: '', date: '', description: '' });
                     }}
                     className="mb-6 py-2 px-6 bg-budget-blue hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105"
@@ -245,10 +216,15 @@ const ExpensesPage = () => {
                         </table>
                     </div>
                 )}
+
+                {/* Add the ExpenseCategoryChart here for expense-specific visualization */}
+                <div className="mt-8">
+                    <ExpenseCategoryChart />
+                </div>
             </div>
         </div>
     );
 };
 
-export default ExpensesPage;
+export default ExpensesPage; // Export ExpensesPage
 

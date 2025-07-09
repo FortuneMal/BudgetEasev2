@@ -1,86 +1,14 @@
 // frontend/src/components/Dashboard.jsx
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchExpenses } from '../redux/slices/expensesSlice.jsx'; // Corrected extension
-import { fetchBudgets } from '../redux/slices/budgetsSlice.jsx';   // Corrected extension
-import { fetchGoals } from '../redux/slices/goalsSlice.jsx';     // Corrected extension
-// Assuming Navbar is now a separate component and handled in App.jsx routing
+import { fetchExpenses } from '../redux/slices/expensesSlice.jsx';
+import { fetchBudgets } from '../redux/slices/budgetsSlice.jsx';
+import { fetchGoals } from '../redux/slices/goalsSlice.jsx';
 import CurrencyConverter from './CurrencyConverter.jsx'; // Import the new component
 import Notifications from './Notifications.jsx'; // Import the new component
 import ExpenseCategoryChart from './charts/ExpenseCategoryChart.jsx'; // Import the chart component
 
-
-const Dashboard = () => {
-    // ... (existing state and dispatch)
-
-    return (
-        <div className="min-h-screen bg-blue-50 p-6 flex flex-col items-center">
-            {/* ... (header and notifications) */}
-
-            <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* ... (Expense, Budget, Savings Goals cards) */}
-
-                <CurrencyConverter />
-
-                {/* Expense Chart Card */}
-                <ExpenseCategoryChart />
-
-                {/* Placeholder for other cards */}
-                {/* ... */}
-            </main>
-
-            {/* ... (footer) */}
-        </div>
-    );
-};
-
-const Dashboard = () => {
-    // ... (existing state and dispatch)
-
-    return (
-        <div className="min-h-screen bg-blue-50 p-6 flex flex-col items-center">
-            {/* ... (header) */}
-
-            <Notifications /> {/* Add notifications component here */}
-
-            <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* ... (Expense, Budget, Savings Goals cards) */}
-
-                <CurrencyConverter />
-
-                {/* Placeholder for other cards */}
-                {/* ... */}
-            </main>
-
-            {/* ... (footer) */}
-        </div>
-    );
-};
-
-
-const Dashboard = () => {
-    // ... (existing state and dispatch)
-
-    return (
-        <div className="min-h-screen bg-blue-50 p-6 flex flex-col items-center">
-            {/* ... (header and existing cards) */}
-
-            <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* ... (Expense, Budget, Savings Goals cards) */}
-
-                {/* Currency Converter Card */}
-                <CurrencyConverter />
-
-                {/* Placeholder for other cards */}
-                {/* ... */}
-            </main>
-
-            {/* ... (footer) */}
-        </div>
-    );
-};
-
-const Dashboard = () => {
+const Dashboard = () => { // Ensure this is the ONLY 'const Dashboard = () => {' in the file
     const user = useSelector(state => state.auth.user);
     const expenses = useSelector(state => state.expenses.expenses);
     const expensesStatus = useSelector(state => state.expenses.status);
@@ -135,6 +63,8 @@ const Dashboard = () => {
                 </div>
             </header>
 
+            <Notifications /> {/* Add notifications component here */}
+
             <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Expense Categorization Card */}
                 <div className="bg-white p-6 rounded-xl shadow-md border-t-4 border-budget-blue">
@@ -146,7 +76,7 @@ const Dashboard = () => {
                     {expensesStatus === 'failed' && <p className="text-red-600">Error: {expensesError}</p>}
                     {expensesStatus === 'succeeded' && expenses.length > 0 ? (
                         <ul className="list-disc list-inside text-gray-600 space-y-2">
-                            {expenses.slice(0, 3).map(exp => (
+                            {expenses.slice(0, 3).map(exp => ( // Show first 3 for dashboard summary
                                 <li key={exp._id}>
                                     {exp.description || exp.category}: ${exp.amount} on {new Date(exp.date).toLocaleDateString()}
                                 </li>
@@ -170,7 +100,7 @@ const Dashboard = () => {
                     {budgetsStatus === 'failed' && <p className="text-red-600">Error: {budgetsError}</p>}
                     {budgetsStatus === 'succeeded' && budgets.length > 0 ? (
                         <ul className="list-disc list-inside text-gray-600 space-y-2">
-                            {budgets.slice(0, 2).map(budget => (
+                            {budgets.slice(0, 2).map(budget => ( // Show first 2 for dashboard summary
                                 <li key={budget._id}>
                                     {budget.category} Budget: ${budget.limit}
                                 </li>
@@ -194,7 +124,7 @@ const Dashboard = () => {
                     {goalsStatus === 'failed' && <p className="text-red-600">Error: {goalsError}</p>}
                     {goalsStatus === 'succeeded' && goals.length > 0 ? (
                         <ul className="list-disc list-inside text-gray-600 space-y-2">
-                            {goals.slice(0, 2).map(goal => (
+                            {goals.slice(0, 2).map(goal => ( // Show first 2 for dashboard summary
                                 <li key={goal._id}>
                                     {goal.name}: ${goal.savedAmount} / ${goal.targetAmount}
                                 </li>
@@ -208,7 +138,12 @@ const Dashboard = () => {
                     </button>
                 </div>
 
-                {/* Placeholder for other cards (Recommendations, Currency Exchange, Security) */}
+                {/* Currency Converter Card */}
+                <CurrencyConverter />
+
+                {/* Expense Chart Card */}
+                <ExpenseCategoryChart />
+
             </main>
 
             {/* Footer */}

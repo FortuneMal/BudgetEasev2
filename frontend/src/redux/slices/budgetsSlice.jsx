@@ -7,14 +7,17 @@ const initialState = {
   error: null,
 };
 
-// Helper to get auth header
+// Helper to get auth header (ensure this is present in all slice files that make API calls)
 const getAuthHeader = (getState) => {
     const { auth } = getState();
     return auth.token ? { 'Authorization': `Bearer ${auth.token}` } : {};
+};
 
 // Async Thunk for fetching budgets
 export const fetchBudgets = createAsyncThunk('budgets/fetchBudgets', async (_, { getState }) => {
-  const response = await fetch('http://localhost:3001/api/budgets');
+  const response = await fetch('http://localhost:3001/api/budgets', {
+    headers: getAuthHeader(getState),
+  });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to fetch budgets');
@@ -29,7 +32,7 @@ export const addBudget = createAsyncThunk('budgets/addBudget', async (newBudget,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // 'Authorization': `Bearer ${auth.token}` // Future: Send JWT token
+      ...getAuthHeader(getState),
     },
     body: JSON.stringify(newBudget),
   });
@@ -47,7 +50,7 @@ export const updateBudget = createAsyncThunk('budgets/updateBudget', async (upda
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      // 'Authorization': `Bearer ${auth.token}` // Future: Send JWT token
+      ...getAuthHeader(getState),
     },
     body: JSON.stringify(updatedBudget),
   });
@@ -63,9 +66,7 @@ export const updateBudget = createAsyncThunk('budgets/updateBudget', async (upda
 export const deleteBudget = createAsyncThunk('budgets/deleteBudget', async (budgetId, { dispatch, getState }) => {
   const response = await fetch(`http://localhost:3001/api/budgets/${budgetId}`, {
     method: 'DELETE',
-    headers: {
-      // 'Authorization': `Bearer ${auth.token}` // Future: Send JWT token
-    },
+    headers: getAuthHeader(getState),
   });
   if (!response.ok) {
     const errorData = await response.json();

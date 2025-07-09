@@ -1,5 +1,11 @@
 // frontend/src/redux/slices/expensesSlice.jsx
-// ... (imports and initialState)
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'; // <-- ENSURE THIS LINE IS CORRECT
+
+const initialState = {
+  expenses: [],
+  status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+  error: null,
+};
 
 // Helper to get auth header
 const getAuthHeader = (getState) => {
@@ -19,7 +25,6 @@ export const fetchExpenses = createAsyncThunk('expenses/fetchExpenses', async (_
   const data = await response.json();
   return data;
 });
-
 
 // Async Thunk for adding an expense
 export const addExpense = createAsyncThunk('expenses/addExpense', async (newExpense, { dispatch, getState }) => {
@@ -62,7 +67,7 @@ export const deleteExpense = createAsyncThunk('expenses/deleteExpense', async (e
   const response = await fetch(`http://localhost:3001/api/expenses/${expenseId}`, {
     method: 'DELETE',
     headers: getAuthHeader(getState), // Include auth header
-    });
+  });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to delete expense');
@@ -74,31 +79,38 @@ export const deleteExpense = createAsyncThunk('expenses/deleteExpense', async (e
 const expensesSlice = createSlice({
   name: 'expenses',
   initialState,
-  reducers: {},
+  reducers: {
+    // You might keep some synchronous reducers for immediate UI updates
+    // or clear state on logout, etc.
+  },
   extraReducers(builder) {
     builder
+      // Fetch Expenses
       .addCase(fetchExpenses.pending, (state) => {
         state.status = 'loading';
       })
       .addCase(fetchExpenses.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.expenses = action.payload;
+        state.expenses = action.payload; // Set expenses from API response
       })
       .addCase(fetchExpenses.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message;
       })
+      // Add Expense
       .addCase(addExpense.fulfilled, (state, action) => {
-        state.expenses.push(action.payload);
+        state.expenses.push(action.payload); // Add new expense to state
       })
+      // Update Expense
       .addCase(updateExpense.fulfilled, (state, action) => {
         const index = state.expenses.findIndex(exp => exp._id === action.payload._id);
         if (index !== -1) {
-          state.expenses[index] = action.payload;
+          state.expenses[index] = action.payload; // Update existing expense in state
         }
       })
+      // Delete Expense
       .addCase(deleteExpense.fulfilled, (state, action) => {
-        state.expenses = state.expenses.filter(exp => exp._id !== action.payload);
+        state.expenses = state.expenses.filter(exp => exp._id !== action.payload); // Remove deleted expense
       });
   },
 });
