@@ -2,6 +2,31 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchExpenses, addExpense, updateExpense, deleteExpense } from '../../redux/slices/expensesSlice';
+import ExpenseCategoryChart from './charts/ExpenseCategoryChart.jsx'; // Import the chart component
+
+const Dashboard = () => {
+    // ... (existing state and dispatch)
+
+    return (
+        <div className="min-h-screen bg-blue-50 p-6 flex flex-col items-center">
+            {/* ... (header and notifications) */}
+
+            <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* ... (Expense, Budget, Savings Goals cards) */}
+
+                <CurrencyConverter />
+
+                {/* Expense Chart Card */}
+                <ExpenseCategoryChart />
+
+                {/* Placeholder for other cards */}
+                {/* ... */}
+            </main>
+
+            {/* ... (footer) */}
+        </div>
+    );
+};
 
 const ExpensesPage = () => {
     const dispatch = useDispatch();

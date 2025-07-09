@@ -7,6 +7,11 @@ const initialState = {
   error: null,
 };
 
+// Helper to get auth header
+const getAuthHeader = (getState) => {
+    const { auth } = getState();
+    return auth.token ? { 'Authorization': `Bearer ${auth.token}` } : {};
+
 // Async Thunk for fetching goals
 export const fetchGoals = createAsyncThunk('goals/fetchGoals', async (_, { getState }) => {
   const response = await fetch('http://localhost:3001/api/goals');

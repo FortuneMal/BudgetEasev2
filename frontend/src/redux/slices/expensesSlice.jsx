@@ -1,15 +1,17 @@
 // frontend/src/redux/slices/expensesSlice.jsx
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+// ... (imports and initialState)
 
-const initialState = {
-  expenses: [],
-  status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-  error: null,
+// Helper to get auth header
+const getAuthHeader = (getState) => {
+    const { auth } = getState();
+    return auth.token ? { 'Authorization': `Bearer ${auth.token}` } : {};
 };
 
 // Async Thunk for fetching expenses
 export const fetchExpenses = createAsyncThunk('expenses/fetchExpenses', async (_, { getState }) => {
-  const response = await fetch('http://localhost:3001/api/expenses');
+  const response = await fetch('http://localhost:3001/api/expenses', {
+    headers: getAuthHeader(getState), // Include auth header
+  });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to fetch expenses');
@@ -18,14 +20,14 @@ export const fetchExpenses = createAsyncThunk('expenses/fetchExpenses', async (_
   return data;
 });
 
+
 // Async Thunk for adding an expense
 export const addExpense = createAsyncThunk('expenses/addExpense', async (newExpense, { dispatch, getState }) => {
-  const { auth } = getState();
   const response = await fetch('http://localhost:3001/api/expenses', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // 'Authorization': `Bearer ${auth.token}` // Future: Send JWT token
+      ...getAuthHeader(getState), // Include auth header
     },
     body: JSON.stringify(newExpense),
   });
@@ -39,13 +41,11 @@ export const addExpense = createAsyncThunk('expenses/addExpense', async (newExpe
 
 // Async Thunk for updating an expense
 export const updateExpense = createAsyncThunk('expenses/updateExpense', async (updatedExpense, { dispatch, getState }) => {
-  const { auth } = getState();
-  // The problematic line was likely here (line 159 in previous logs)
   const response = await fetch(`http://localhost:3001/api/expenses/${updatedExpense._id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      // 'Authorization': `Bearer ${auth.token}` // Future: Send JWT token
+      ...getAuthHeader(getState), // Include auth header
     },
     body: JSON.stringify(updatedExpense),
   });
@@ -59,13 +59,10 @@ export const updateExpense = createAsyncThunk('expenses/updateExpense', async (u
 
 // Async Thunk for deleting an expense
 export const deleteExpense = createAsyncThunk('expenses/deleteExpense', async (expenseId, { dispatch, getState }) => {
-  const { auth } = getState();
   const response = await fetch(`http://localhost:3001/api/expenses/${expenseId}`, {
     method: 'DELETE',
-    headers: {
-      // 'Authorization': `Bearer ${auth.token}` // Future: Send JWT token
-    },
-  });
+    headers: getAuthHeader(getState), // Include auth header
+    });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to delete expense');

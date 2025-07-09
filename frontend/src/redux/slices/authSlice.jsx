@@ -1,25 +1,29 @@
+// frontend/src/redux/slices/authSlice.jsx (excerpt)
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  user: JSON.parse(sessionStorage.getItem('currentUser')) || null, // Load from session storage
-  isAuthenticated: !!JSON.parse(sessionStorage.getItem('currentUser')),
+  user: JSON.parse(sessionStorage.getItem('userInfo')) || null, // Changed from currentUser to userInfo
+  token: sessionStorage.getItem('userToken') || null,
+  isAuthenticated: !!sessionStorage.getItem('userInfo'),
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // Action to set user upon successful login
     loginUser: (state, action) => {
-      state.user = action.payload;
+      state.user = action.payload; // action.payload should now be the user object with _id, name, username, and token
+      state.token = action.payload.token;
       state.isAuthenticated = true;
-      sessionStorage.setItem('currentUser', JSON.stringify(action.payload)); // Persist
+      sessionStorage.setItem('userInfo', JSON.stringify(action.payload)); // Store user info including token
+      sessionStorage.setItem('userToken', action.payload.token); // Store token separately for easy access
     },
-    // Action to clear user upon logout
     logoutUser: (state) => {
       state.user = null;
+      state.token = null;
       state.isAuthenticated = false;
-      sessionStorage.removeItem('currentUser'); // Clear persisted data
+      sessionStorage.removeItem('userInfo');
+      sessionStorage.removeItem('userToken');
     },
   },
 });

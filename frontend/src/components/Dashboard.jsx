@@ -5,6 +5,80 @@ import { fetchExpenses } from '../redux/slices/expensesSlice.jsx'; // Corrected 
 import { fetchBudgets } from '../redux/slices/budgetsSlice.jsx';   // Corrected extension
 import { fetchGoals } from '../redux/slices/goalsSlice.jsx';     // Corrected extension
 // Assuming Navbar is now a separate component and handled in App.jsx routing
+import CurrencyConverter from './CurrencyConverter.jsx'; // Import the new component
+import Notifications from './Notifications.jsx'; // Import the new component
+import ExpenseCategoryChart from './charts/ExpenseCategoryChart.jsx'; // Import the chart component
+
+
+const Dashboard = () => {
+    // ... (existing state and dispatch)
+
+    return (
+        <div className="min-h-screen bg-blue-50 p-6 flex flex-col items-center">
+            {/* ... (header and notifications) */}
+
+            <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* ... (Expense, Budget, Savings Goals cards) */}
+
+                <CurrencyConverter />
+
+                {/* Expense Chart Card */}
+                <ExpenseCategoryChart />
+
+                {/* Placeholder for other cards */}
+                {/* ... */}
+            </main>
+
+            {/* ... (footer) */}
+        </div>
+    );
+};
+
+const Dashboard = () => {
+    // ... (existing state and dispatch)
+
+    return (
+        <div className="min-h-screen bg-blue-50 p-6 flex flex-col items-center">
+            {/* ... (header) */}
+
+            <Notifications /> {/* Add notifications component here */}
+
+            <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* ... (Expense, Budget, Savings Goals cards) */}
+
+                <CurrencyConverter />
+
+                {/* Placeholder for other cards */}
+                {/* ... */}
+            </main>
+
+            {/* ... (footer) */}
+        </div>
+    );
+};
+
+
+const Dashboard = () => {
+    // ... (existing state and dispatch)
+
+    return (
+        <div className="min-h-screen bg-blue-50 p-6 flex flex-col items-center">
+            {/* ... (header and existing cards) */}
+
+            <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* ... (Expense, Budget, Savings Goals cards) */}
+
+                {/* Currency Converter Card */}
+                <CurrencyConverter />
+
+                {/* Placeholder for other cards */}
+                {/* ... */}
+            </main>
+
+            {/* ... (footer) */}
+        </div>
+    );
+};
 
 const Dashboard = () => {
     const user = useSelector(state => state.auth.user);
