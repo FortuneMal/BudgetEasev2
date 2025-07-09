@@ -38,6 +38,10 @@ const BudgetsPage = () => {
                 limit: parseFloat(newBudget.limit),
             };
 
+            // --- DEBUG LOG: Check what's being sent ---
+            console.log('Budget data being sent to backend:', budgetToSave);
+            // --- END DEBUG LOG ---
+
             if (editingBudget) {
                 // Update existing budget
                 await dispatch(updateBudget({ _id: editingBudget._id, ...budgetToSave })).unwrap();

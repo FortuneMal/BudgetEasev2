@@ -1,14 +1,15 @@
 // frontend/src/components/Dashboard.jsx
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom'; // Import Link for navigation
 import { fetchExpenses } from '../redux/slices/expensesSlice.jsx';
 import { fetchBudgets } from '../redux/slices/budgetsSlice.jsx';
 import { fetchGoals } from '../redux/slices/goalsSlice.jsx';
-import CurrencyConverter from './CurrencyConverter.jsx'; // Import the new component
-import Notifications from './Notifications.jsx'; // Import the new component
-import ExpenseCategoryChart from './charts/ExpenseCategoryChart.jsx'; // Import the chart component
+import CurrencyConverter from './CurrencyConverter.jsx';
+import Notifications from './Notifications.jsx';
+import ExpenseCategoryChart from './charts/ExpenseCategoryChart.jsx';
 
-const Dashboard = () => { // Ensure this is the ONLY 'const Dashboard = () => {' in the file
+const Dashboard = () => {
     const user = useSelector(state => state.auth.user);
     const expenses = useSelector(state => state.expenses.expenses);
     const expensesStatus = useSelector(state => state.expenses.status);
@@ -63,7 +64,7 @@ const Dashboard = () => { // Ensure this is the ONLY 'const Dashboard = () => {'
                 </div>
             </header>
 
-            <Notifications /> {/* Add notifications component here */}
+            <Notifications />
 
             <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Expense Categorization Card */}
@@ -85,9 +86,10 @@ const Dashboard = () => { // Ensure this is the ONLY 'const Dashboard = () => {'
                     ) : (
                         expensesStatus === 'succeeded' && <p className="text-gray-500">No expenses recorded yet. Start adding some!</p>
                     )}
-                    <button className="mt-4 py-2 px-4 bg-budget-blue hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md">
+                    {/* Changed button to Link */}
+                    <Link to="/expenses" className="inline-block mt-4 py-2 px-4 bg-budget-blue hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
                         View All Expenses
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Budget Tracking Card */}
@@ -109,9 +111,10 @@ const Dashboard = () => { // Ensure this is the ONLY 'const Dashboard = () => {'
                     ) : (
                         budgetsStatus === 'succeeded' && <p className="text-gray-500">No budgets set up yet.</p>
                     )}
-                    <button className="mt-4 py-2 px-4 bg-budget-blue hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md">
+                    {/* Changed button to Link */}
+                    <Link to="/budgets" className="inline-block mt-4 py-2 px-4 bg-budget-blue hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
                         Manage Budgets
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Savings Goals Card */}
@@ -133,9 +136,10 @@ const Dashboard = () => { // Ensure this is the ONLY 'const Dashboard = () => {'
                     ) : (
                         goalsStatus === 'succeeded' && <p className="text-gray-500">No savings goals defined yet.</p>
                     )}
-                    <button className="mt-4 py-2 px-4 bg-budget-blue hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md">
+                    {/* Changed button to Link */}
+                    <Link to="/goals" className="inline-block mt-4 py-2 px-4 bg-budget-blue hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
                         Add New Goal
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Currency Converter Card */}
