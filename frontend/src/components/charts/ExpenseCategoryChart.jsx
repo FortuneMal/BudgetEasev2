@@ -11,8 +11,8 @@ const ExpenseCategoryChart = () => {
 
     if (expensesStatus !== 'succeeded' || expenses.length === 0) {
         return (
-            <div className="bg-white p-6 rounded-xl shadow-md border-t-4 border-budget-blue">
-                <h2 className="text-2xl font-bold text-budget-blue-dark mb-4">Expense Breakdown</h2>
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"> {/* Minimalist card styling */}
+                <h2 className="text-2xl font-bold text-primary-dark mb-4">Expense Breakdown</h2>
                 <p className="text-gray-500">No expense data to display chart.</p>
             </div>
         );
@@ -27,8 +27,8 @@ const ExpenseCategoryChart = () => {
     ).map(([name, value]) => ({ name, value }));
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-md border-t-4 border-budget-blue">
-            <h2 className="text-2xl font-bold text-budget-blue-dark mb-4">Expense Breakdown by Category</h2>
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"> {/* Minimalist card styling */}
+            <h2 className="text-2xl font-bold text-primary-dark mb-4">Expense Breakdown by Category</h2>
             <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                     <Pie
@@ -55,3 +55,4 @@ const ExpenseCategoryChart = () => {
 };
 
 export default ExpenseCategoryChart;
+

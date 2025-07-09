@@ -1,16 +1,26 @@
 /* frontend/src/index.css */
+
+/* Import Tailwind's base styles, which include a CSS reset and basic styling */
 @tailwind base;
+
+/* Import Tailwind's component classes, like buttons, cards, etc. */
 @tailwind components;
+
+/* Import Tailwind's utility classes, which are the core of Tailwind (e.g., flex, p-4, text-lg) */
 @tailwind utilities;
 
+/* Apply the Inter font globally */
 body {
-  font-family: 'Inter', sans-serif;
-  margin: 0;
-  /* Ensure the body itself is not setting a conflicting background */
-  background-color: #f8f8f8; /* A very subtle off-white background */
+  font-family: 'Inter', sans-serif; /* Fallback to generic sans-serif */
+  margin: 0; /* Ensure no default body margin */
+  /* IMPORTANT: Remove any other background-color, display, or layout properties from here */
+  /* The overall background should be set on the root component or its direct children */
 }
 
+/* Ensure the root element takes full viewport dimensions */
 #root {
-  min-height: 100vh;
-  width: 100vw;
+  min-height: 100vh; /* Ensure the root element takes at least full viewport height */
+  width: 100vw; /* Ensure it takes full width */
+  /* IMPORTANT: Remove any other display or layout properties from here */
 }
+

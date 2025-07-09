@@ -22,6 +22,7 @@ const CurrencyConverter = () => {
         }
 
         try {
+            // This endpoint needs to be implemented in your backend (Phase 4)
             const response = await fetch(`http://localhost:3001/api/currency/convert?from=${fromCurrency}&to=${toCurrency}&amount=${amount}`);
             const data = await response.json();
 
@@ -39,8 +40,8 @@ const CurrencyConverter = () => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-md border-t-4 border-budget-blue">
-            <h2 className="text-2xl font-bold text-budget-blue-dark mb-4">Currency Converter</h2>
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"> {/* Minimalist card styling */}
+            <h2 className="text-2xl font-bold text-primary-dark mb-4">Currency Converter</h2>
             <form onSubmit={handleConvert} className="space-y-4">
                 <div>
                     <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Amount</label>
@@ -49,7 +50,7 @@ const CurrencyConverter = () => {
                         id="amount"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-budget-blue focus:border-budget-blue"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none"
                         placeholder="e.g., 100"
                         step="0.01"
                         required
@@ -62,9 +63,8 @@ const CurrencyConverter = () => {
                             id="fromCurrency"
                             value={fromCurrency}
                             onChange={(e) => setFromCurrency(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-budget-blue focus:border-budget-blue"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none"
                         >
-                            {/* Add more currencies as needed */}
                             <option value="USD">USD</option>
                             <option value="EUR">EUR</option>
                             <option value="GBP">GBP</option>
@@ -79,9 +79,8 @@ const CurrencyConverter = () => {
                             id="toCurrency"
                             value={toCurrency}
                             onChange={(e) => setToCurrency(e.target.value)}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-budget-blue focus:border-budget-blue"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary outline-none"
                         >
-                            {/* Add more currencies as needed */}
                             <option value="EUR">EUR</option>
                             <option value="USD">USD</option>
                             <option value="GBP">GBP</option>
@@ -93,7 +92,7 @@ const CurrencyConverter = () => {
                 </div>
                 <button
                     type="submit"
-                    className="w-full py-2 px-4 bg-budget-blue hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105"
+                    className="w-full py-2 px-4 bg-primary text-white font-semibold rounded-md shadow-sm transition duration-300 ease-in-out hover:bg-opacity-90"
                     disabled={loading}
                 >
                     {loading ? 'Converting...' : 'Convert'}
@@ -105,7 +104,7 @@ const CurrencyConverter = () => {
                 </p>
             )}
             {error && (
-                <p className="mt-4 text-center text-red-600">{error}</p>
+                <p className="mt-4 text-center text-red-500">{error}</p>
             )}
         </div>
     );
