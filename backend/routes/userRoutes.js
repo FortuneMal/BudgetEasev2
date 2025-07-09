@@ -1,7 +1,10 @@
-// backend/routes/userRoutes.js
+// backend/routes/userRoutes.js (excerpt)
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); // Import the User model
+const User = require('../models/User');
+const generateToken = require('../utils/generateToken'); // Import generateToken
+
+// ... (rest of the file)
 
 // @desc    Register a new user
 // @route   POST /api/users/register
@@ -19,17 +22,16 @@ router.post('/register', async (req, res) => {
         const user = await User.create({
             name,
             username,
-            password, // Password will be hashed by the pre-save middleware
+            password,
         });
 
         if (user) {
-            // In a real app, you'd generate a JWT token here
             res.status(201).json({
                 _id: user._id,
                 name: user.name,
                 username: user.username,
-                message: 'User registered successfully'
-                // token: generateToken(user._id) // Placeholder for JWT
+                // Send token upon successful registration
+                token: generateToken(user._id),
             });
         } else {
             res.status(400).json({ message: 'Invalid user data' });
@@ -50,12 +52,12 @@ router.post('/login', async (req, res) => {
         const user = await User.findOne({ username });
 
         if (user && (await user.matchPassword(password))) {
-            // Replace the mock login logic in server.js with this
             res.json({
                 _id: user._id,
                 name: user.name,
                 username: user.username,
-                // token: generateToken(user._id) // Placeholder for JWT
+                // Send token upon successful login
+                token: generateToken(user._id),
             });
         } else {
             res.status(401).json({ message: 'Invalid username or password' });
@@ -66,18 +68,4 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// @desc    Get user profile
-// @route   GET /api/users/profile
-// @access  Private (requires authentication middleware)
-// You would add an authentication middleware here to protect this route
-router.get('/profile', async (req, res) => {
-    // For now, let's assume a user ID is passed,
-    // but normally this would come from a JWT token after authentication.
-    // const user = await User.findById(req.user._id); // req.user would be set by auth middleware
-
-    // For demo purposes, let's just return a placeholder
-    res.json({ message: 'User profile data (requires authentication)' });
-});
-
 module.exports = router;
-

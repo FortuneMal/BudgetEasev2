@@ -5,6 +5,13 @@ const cors = require('cors');
 const dotenv = require('dotenv'); // For environment variables
 const connectDB = require('./config/db'); // Import the DB connection function
 
+// backend/server.js (excerpt)
+// ... (existing imports)
+const currencyRoutes = require('./routes/currencyRoutes'); // Import currency routes
+
+// ... (existing app.use for other routes)
+app.use('/api/currency', currencyRoutes); // Use currency routes
+
 // Load environment variables from .env file
 dotenv.config();
 

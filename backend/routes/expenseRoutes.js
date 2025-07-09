@@ -2,17 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Expense = require('../models/Expense'); // Import Expense model
-// const protect = require('../middleware/authMiddleware'); // Future: Import auth middleware
-
-// Middleware to protect routes (placeholder for now)
-const protect = (req, res, next) => {
-    // In a real app, this would verify a JWT token
-    // For this demo, we'll just mock a user ID for now
-    req.user = { _id: '60d5ec49f8c7d8001c8c8c8c' }; // Mock user ID for testing
-    // You'll replace this with actual token verification and user extraction
-    next();
-};
-
+const protect = require('../middleware/authMiddleware'); // Import the real auth middleware
 
 // @desc    Get all expenses for a user
 // @route   GET /api/expenses
@@ -109,6 +99,30 @@ router.delete('/:id', protect, async (req, res) => {
         res.status(500).json({ message: 'Server error deleting expense' });
     }
 });
+
+// Apply 'protect' middleware to all expense routes
+router.route('/')
+    .get(protect, async (req, res) => {
+        try {
+            const expenses = await Expense.find({ user: req.user._id }).sort({ date: -1 });
+            res.json(expenses);
+        } catch (error) {
+            console.error('Error fetching expenses:', error);
+            res.status(500).json({ message: 'Server error fetching expenses' });
+        }
+    })
+    .post(protect, async (req, res) => {
+        const { amount, category, date, description } = req.body;
+        // ... (rest of add expense logic)
+    });
+
+router.route('/:id')
+    .put(protect, async (req, res) => {
+        // ... (rest of update expense logic)
+    })
+    .delete(protect, async (req, res) => {
+        // ... (rest of delete expense logic)
+    });
 
 module.exports = router;
 

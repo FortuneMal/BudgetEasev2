@@ -2,13 +2,31 @@
 const express = require('express');
 const router = express.Router();
 const SavingsGoal = require('../models/SavingsGoal');
-// const protect = require('../middleware/authMiddleware'); // Future: Import auth middleware
+const protect = require('../middleware/authMiddleware'); // Import the real auth middleware
 
-// Placeholder protect middleware (same as in expenseRoutes.js for now)
-const protect = (req, res, next) => {
-    req.user = { _id: '60d5ec49f8c7d8001c8c8c8c' }; // Mock user ID for testing
-    next();
-};
+// Apply 'protect' middleware to all expense routes
+router.route('/')
+    .get(protect, async (req, res) => {
+        try {
+            const expenses = await Expense.find({ user: req.user._id }).sort({ date: -1 });
+            res.json(expenses);
+        } catch (error) {
+            console.error('Error fetching expenses:', error);
+            res.status(500).json({ message: 'Server error fetching expenses' });
+        }
+    })
+    .post(protect, async (req, res) => {
+        const { amount, category, date, description } = req.body;
+        // ... (rest of add expense logic)
+    });
+
+router.route('/:id')
+    .put(protect, async (req, res) => {
+        // ... (rest of update expense logic)
+    })
+    .delete(protect, async (req, res) => {
+        // ... (rest of delete expense logic)
+    });
 
 // @desc    Get all savings goals for a user
 // @route   GET /api/goals
