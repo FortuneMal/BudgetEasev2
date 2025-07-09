@@ -1,7 +1,7 @@
 // backend/routes/budgetRoutes.js
 const express = require('express');
 const router = express.Router();
-const Budget = require('../models/Budget'); // <-- IMPORT THE BUDGET MODEL
+const Budget = require('../models/Budget');
 const protect = require('../middleware/authMiddleware');
 
 // @desc    Get all budgets for a user
@@ -21,10 +21,14 @@ router.route('/')
     // @route   POST /api/budgets
     // @access  Private
     .post(protect, async (req, res) => {
-        const { category, limit } = req.body;
+        // --- DEBUG LOG: Check what backend receives ---
+        console.log('Backend received budget data:', req.body);
+        // --- END DEBUG LOG ---
 
-        if (!category || !limit) {
-            return res.status(400).json({ message: 'Please add a category and a limit for the budget' });
+        const { category, limit, startDate, endDate } = req.body;
+
+        if (!category || !limit || !startDate || !endDate) {
+            return res.status(400).json({ message: 'Please provide category, limit, start and end dates' });
         }
 
         try {
@@ -32,6 +36,8 @@ router.route('/')
                 user: req.user._id,
                 category,
                 limit,
+                startDate,
+                endDate,
             });
 
             const createdBudget = await budget.save();
@@ -47,19 +53,20 @@ router.route('/')
 // @access  Private
 router.route('/:id')
     .put(protect, async (req, res) => {
-        const { category, limit } = req.body;
+        const { category, limit, startDate, endDate } = req.body;
 
         try {
             const budget = await Budget.findById(req.params.id);
 
             if (budget) {
-                // Ensure the logged-in user owns this budget
                 if (budget.user.toString() !== req.user._id.toString()) {
                     return res.status(401).json({ message: 'Not authorized to update this budget' });
                 }
 
                 budget.category = category || budget.category;
                 budget.limit = limit || budget.limit;
+                budget.startDate = startDate || budget.startDate;
+                budget.endDate = endDate || budget.endDate;
 
                 const updatedBudget = await budget.save();
                 res.json(updatedBudget);
@@ -79,12 +86,11 @@ router.route('/:id')
             const budget = await Budget.findById(req.params.id);
 
             if (budget) {
-                // Ensure the logged-in user owns this budget
                 if (budget.user.toString() !== req.user._id.toString()) {
                     return res.status(401).json({ message: 'Not authorized to delete this budget' });
                 }
 
-                await budget.deleteOne(); // Use deleteOne()
+                await budget.deleteOne();
                 res.json({ message: 'Budget removed' });
             } else {
                 res.status(404).json({ message: 'Budget not found' });
