@@ -1,30 +1,30 @@
+// frontend/tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 export default {
-  // The 'content' array tells Tailwind which files to scan for utility classes.
-  // It's crucial for Tailwind to generate only the CSS you actually use.
   content: [
-    "./index.html", // Your main HTML file
-    "./src/**/*.{js,ts,jsx,tsx}", // All JS, TS, JSX, TSX files in the src directory
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
-      // Extend Tailwind's default color palette with custom BudgetEase colors
       colors: {
-        'budget-blue': {
-          DEFAULT: '#3B82F6',   // A standard blue (Tailwind's blue-500)
-          light: '#BFDBFE',     // Lighter blue for backgrounds (Tailwind's blue-200)
-          dark: '#1E3A8A',      // Darker blue for text/headers (Tailwind's blue-900)
-          'extra-dark': '#0B1E4A', // Even darker for strong contrast
+        // Define a custom primary color for your minimalist theme
+        primary: {
+          light: '#E0F2F7', // Very light blue for backgrounds
+          DEFAULT: '#3F72AF', // A muted, professional blue
+          dark: '#1C314A',   // Darker blue for text/headers
         },
-        'budget-white': '#FFFFFF', // Explicit white
-        'budget-gray': {
-          DEFAULT: '#F9FAFB', // Light gray for subtle backgrounds (Tailwind's gray-50)
-          dark: '#6B7280',    // Darker gray for text (Tailwind's gray-500)
-        },
+        gray: {
+          100: '#F5F5F5', // Lighter gray for subtle backgrounds
+          200: '#EEEEEE',
+          300: '#E0E0E0', // For borders
+          600: '#757575', // For secondary text
+          800: '#424242', // For main text
+        }
       },
-      // You can extend other theme properties here, e.g., spacing, typography
       fontFamily: {
-        inter: ['Inter', 'sans-serif'], // Custom font family
+        // Using Inter as before, which fits well with minimalism
+        sans: ['Inter', 'sans-serif'],
       },
     },
   },

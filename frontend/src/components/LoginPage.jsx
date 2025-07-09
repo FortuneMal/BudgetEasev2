@@ -1,22 +1,20 @@
-// frontend/src/components/LoginPage.js
+// frontend/src/components/LoginPage.jsx
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { loginUser } from '../redux/slices/authSlice'; // Import the Redux action
+import { loginUser } from '../redux/slices/authSlice.jsx';
 
 // --- Login Page Component ---
 const LoginPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const dispatch = useDispatch(); // Get the dispatch function
+    const dispatch = useDispatch();
 
-    // Handles the login form submission
     const handleLogin = async (e) => {
         e.preventDefault();
-        setError(''); // Clear previous errors
+        setError('');
 
         try {
-            // Make API call to backend login endpoint
             const response = await fetch('http://localhost:3001/api/users/login', {
                 method: 'POST',
                 headers: {
@@ -28,8 +26,7 @@ const LoginPage = () => {
             const data = await response.json();
 
             if (response.ok) {
-                // Dispatch the Redux action to store user data
-                dispatch(loginUser(data)); // Assuming data contains the user object directly
+                dispatch(loginUser(data));
             } else {
                 setError(data.message || 'Login failed. Please check your credentials.');
             }
@@ -40,13 +37,13 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-blue-100 p-4">
-            <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-b-4 border-blue-500">
-                <h2 className="text-4xl font-extrabold text-center text-blue-900 mb-8">
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4"> {/* Light gray background */}
+            <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md border border-gray-200"> {/* White card, subtle border and shadow */}
+                <h2 className="text-4xl font-extrabold text-primary-dark text-center mb-8"> {/* Custom primary-dark color */}
                     BudgetEase
                 </h2>
-                <h3 className="text-2xl font-semibold text-center text-blue-700 mb-6">
-                    Login to Your Account
+                <h3 className="text-2xl font-semibold text-gray-800 text-center mb-6"> {/* Darker gray for headers */}
+                    Login
                 </h3>
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div>
@@ -56,7 +53,7 @@ const LoginPage = () => {
                         <input
                             type="text"
                             id="username"
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg"
+                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary text-lg outline-none" // Subtle border, rounded-md, primary accent on focus
                             placeholder="Enter your username or email"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
@@ -70,7 +67,7 @@ const LoginPage = () => {
                         <input
                             type="password"
                             id="password"
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg"
+                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary text-lg outline-none" // Subtle border, rounded-md, primary accent on focus
                             placeholder="Enter your password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -78,11 +75,11 @@ const LoginPage = () => {
                         />
                     </div>
                     {error && (
-                        <p className="text-red-600 text-center text-md font-medium">{error}</p>
+                        <p className="text-red-500 text-center text-md font-medium">{error}</p>
                     )}
                     <button
                         type="submit"
-                        className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 text-xl"
+                        className="w-full py-3 px-4 bg-primary text-white font-bold rounded-md shadow-sm transition duration-300 ease-in-out hover:bg-opacity-90 text-xl" // Custom primary color, subtle hover
                     >
                         Login
                     </button>
