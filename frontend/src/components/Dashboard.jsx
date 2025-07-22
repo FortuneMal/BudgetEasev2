@@ -5,9 +5,9 @@ import { Link } from 'react-router-dom';
 import { fetchExpenses } from '../redux/slices/expensesSlice.jsx';
 import { fetchBudgets } from '../redux/slices/budgetsSlice.jsx';
 import { fetchGoals } from '../redux/slices/goalsSlice.jsx';
-import CurrencyConverter from './CurrencyConverter.jsx'; // Assuming this exists
-import Notifications from './Notifications.jsx';     // Assuming this exists
-import ExpenseCategoryChart from './charts/ExpenseCategoryChart.jsx'; // Assuming this exists
+import CurrencyConverter from './CurrencyConverter.jsx';
+import Notifications from './Notifications.jsx';
+import ExpenseCategoryChart from './charts/ExpenseCategoryChart.jsx';
 
 const Dashboard = () => {
     const user = useSelector(state => state.auth.user);
@@ -47,24 +47,37 @@ const Dashboard = () => {
         return <p>Please log in to view the dashboard.</p>;
     }
 
+    // Handler for "Implement Tips" button
+    const handleImplementTips = () => {
+        console.log("Implement Tips button clicked! This feature is under development.");
+        // In a real application, this would trigger logic to apply recommendations
+        // or navigate to a page where tips can be managed.
+    };
+
+    // Handler for "Security Settings" button
+    const handleSecuritySettings = () => {
+        console.log("Security Settings button clicked! This feature is under development.");
+        // In a real application, this would navigate to a security settings page.
+    };
+
     return (
-        <div className="min-h-screen bg-gray-100 p-6 flex flex-col items-center"> {/* Light gray background */}
-            <header className="w-full max-w-6xl bg-white p-6 rounded-lg shadow-sm flex justify-between items-center mb-8 border border-gray-200"> {/* White background, subtle shadow, light border */}
-                <h1 className="text-4xl font-extrabold text-primary-dark"> {/* Custom primary-dark color */}
+        <div className="min-h-screen bg-gray-100 p-6 flex flex-col items-center">
+            <header className="w-full max-w-6xl bg-white p-6 rounded-lg shadow-sm flex justify-between items-center mb-8 border border-gray-200">
+                <h1 className="text-4xl font-extrabold text-primary-dark">
                     BudgetEase
                 </h1>
                 <div className="flex items-center space-x-4">
-                    <span className="text-xl font-semibold text-gray-700"> {/* Muted text */}
+                    <span className="text-xl font-semibold text-gray-700">
                         Welcome, {user.name}!
                     </span>
                 </div>
             </header>
 
-            <Notifications /> {/* Assuming Notifications component exists and is styled separately */}
+            <Notifications />
 
             <main className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Expense Categorization Card */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"> {/* Subtle border and shadow */}
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                     <h2 className="text-2xl font-bold text-primary-dark mb-4">Expense Categorization</h2>
                     <p className="text-gray-700 mb-4">
                         Track where your money goes by categorizing your expenses.
@@ -82,7 +95,7 @@ const Dashboard = () => {
                     ) : (
                         expensesStatus === 'succeeded' && <p className="text-gray-500">No expenses recorded yet. Start adding some!</p>
                     )}
-                    <Link to="/expenses" className="inline-block mt-4 py-2 px-4 bg-primary text-white font-semibold rounded-md shadow-sm transition duration-300 ease-in-out hover:bg-opacity-90"> {/* Custom primary color, subtle hover */}
+                    <Link to="/expenses" className="inline-block mt-4 py-2 px-4 bg-primary text-white font-semibold rounded-md shadow-sm transition duration-300 ease-in-out hover:bg-opacity-90">
                         View All Expenses
                     </Link>
                 </div>
@@ -158,7 +171,9 @@ const Dashboard = () => {
                         <li>Look for cheaper internet plans.</li>
                         <li>Automate savings transfers.</li>
                     </ul>
-                    <button className="mt-4 py-2 px-4 bg-primary text-white font-semibold rounded-md shadow-sm transition duration-300 ease-in-out hover:bg-opacity-90">
+                    <button
+                        onClick={handleImplementTips} // Added onClick handler
+                        className="mt-4 py-2 px-4 bg-primary text-white font-semibold rounded-md shadow-sm transition duration-300 ease-in-out hover:bg-opacity-90">
                         Implement Tips
                     </button>
                 </div>
@@ -174,7 +189,9 @@ const Dashboard = () => {
                         <br />
                         Data Encryption: Active
                     </p>
-                    <button className="mt-4 py-2 px-4 bg-primary text-white font-semibold rounded-md shadow-sm transition duration-300 ease-in-out hover:bg-opacity-90">
+                    <button
+                        onClick={handleSecuritySettings} // Added onClick handler
+                        className="mt-4 py-2 px-4 bg-primary text-white font-semibold rounded-md shadow-sm transition duration-300 ease-in-out hover:bg-opacity-90">
                         Security Settings
                     </button>
                 </div>
