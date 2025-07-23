@@ -1,20 +1,20 @@
-// backend/models/SavingsGoal.js
+// backend/models/Goal.js
 const mongoose = require('mongoose');
 
-const savingsGoalSchema = mongoose.Schema(
+const goalSchema = mongoose.Schema(
     {
         user: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
-            ref: 'User',
+            ref: 'User', // Reference to the User model
         },
         name: {
             type: String,
-            required: true,
+            required: [true, 'Please add a goal name'],
         },
         targetAmount: {
             type: Number,
-            required: true,
+            required: [true, 'Please add a target amount'],
         },
         savedAmount: {
             type: Number,
@@ -22,11 +22,7 @@ const savingsGoalSchema = mongoose.Schema(
         },
         targetDate: {
             type: Date,
-            required: false, // Optional target date
-        },
-        isCompleted: {
-            type: Boolean,
-            default: false,
+            required: [true, 'Please add a target date'],
         },
     },
     {
@@ -34,7 +30,5 @@ const savingsGoalSchema = mongoose.Schema(
     }
 );
 
-const SavingsGoal = mongoose.model('SavingsGoal', savingsGoalSchema);
-
-module.exports = SavingsGoal;
+module.exports = mongoose.model('Goal', goalSchema);
 

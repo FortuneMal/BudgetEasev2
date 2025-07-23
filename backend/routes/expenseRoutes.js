@@ -1,128 +1,89 @@
 // backend/routes/expenseRoutes.js
 const express = require('express');
 const router = express.Router();
-const Expense = require('../models/Expense'); // Import Expense model
-const protect = require('../middleware/authMiddleware'); // Import the real auth middleware
+const asyncHandler = require('express-async-handler');
+const Expense = require('../models/Expense');
+const { protect } = require('../middleware/authMiddleware'); // Import protect middleware
 
-// @desc    Get all expenses for a user
+// @desc    Get all expenses for the authenticated user
 // @route   GET /api/expenses
 // @access  Private
-router.get('/', protect, async (req, res) => {
-    try {
-        // Find expenses belonging to the authenticated user
-        const expenses = await Expense.find({ user: req.user._id }).sort({ date: -1 });
-        res.json(expenses);
-    } catch (error) {
-        console.error('Error fetching expenses:', error);
-        res.status(500).json({ message: 'Server error fetching expenses' });
-    }
-});
+router.get('/', protect, asyncHandler(async (req, res) => {
+    // Find expenses only for the logged-in user (req.user._id comes from protect middleware)
+    const expenses = await Expense.find({ user: req.user._id });
+    res.json(expenses);
+}));
 
-// @desc    Add a new expense
+// @desc    Add a new expense for the authenticated user
 // @route   POST /api/expenses
 // @access  Private
-router.post('/', protect, async (req, res) => {
-    const { amount, category, date, description } = req.body;
+router.post('/', protect, asyncHandler(async (req, res) => {
+    const { description, amount, category, date } = req.body;
 
-    if (!amount || !category) {
-        return res.status(400).json({ message: 'Please enter amount and category' });
+    if (!description || !amount || !category) {
+        res.status(400);
+        throw new Error('Please add all fields: description, amount, category');
     }
 
-    try {
-        const expense = new Expense({
-            user: req.user._id, // Assign to the authenticated user
-            amount,
-            category,
-            date: date || Date.now(),
-            description,
-        });
+    const expense = await Expense.create({
+        user: req.user._id, // Assign the expense to the logged-in user
+        description,
+        amount,
+        category,
+        date: date || Date.now(),
+    });
 
-        const createdExpense = await expense.save();
-        res.status(201).json(createdExpense);
-    } catch (error) {
-        console.error('Error adding expense:', error);
-        res.status(500).json({ message: 'Server error adding expense' });
-    }
-});
+    res.status(201).json(expense);
+}));
 
-// @desc    Update an expense
+// @desc    Update an expense for the authenticated user
 // @route   PUT /api/expenses/:id
 // @access  Private
-router.put('/:id', protect, async (req, res) => {
-    const { amount, category, date, description } = req.body;
+router.put('/:id', protect, asyncHandler(async (req, res) => {
+    const { description, amount, category, date } = req.body;
 
-    try {
-        const expense = await Expense.findById(req.params.id);
+    const expense = await Expense.findById(req.params.id);
 
-        if (expense) {
-            // Ensure the expense belongs to the authenticated user
-            if (expense.user.toString() !== req.user._id.toString()) {
-                return res.status(401).json({ message: 'Not authorized to update this expense' });
-            }
-
-            expense.amount = amount || expense.amount;
-            expense.category = category || expense.category;
-            expense.date = date || expense.date;
-            expense.description = description || expense.description;
-
-            const updatedExpense = await expense.save();
-            res.json(updatedExpense);
-        } else {
-            res.status(404).json({ message: 'Expense not found' });
-        }
-    } catch (error) {
-        console.error('Error updating expense:', error);
-        res.status(500).json({ message: 'Server error updating expense' });
+    if (!expense) {
+        res.status(404);
+        throw new Error('Expense not found');
     }
-});
 
-// @desc    Delete an expense
+    // Make sure the logged-in user owns the expense
+    if (expense.user.toString() !== req.user._id.toString()) {
+        res.status(401);
+        throw new Error('Not authorized to update this expense');
+    }
+
+    expense.description = description || expense.description;
+    expense.amount = amount || expense.amount;
+    expense.category = category || expense.category;
+    expense.date = date || expense.date;
+
+    const updatedExpense = await expense.save();
+    res.json(updatedExpense);
+}));
+
+// @desc    Delete an expense for the authenticated user
 // @route   DELETE /api/expenses/:id
 // @access  Private
-router.delete('/:id', protect, async (req, res) => {
-    try {
-        const expense = await Expense.findById(req.params.id);
+router.delete('/:id', protect, asyncHandler(async (req, res) => {
+    const expense = await Expense.findById(req.params.id);
 
-        if (expense) {
-            // Ensure the expense belongs to the authenticated user
-            if (expense.user.toString() !== req.user._id.toString()) {
-                return res.status(401).json({ message: 'Not authorized to delete this expense' });
-            }
-
-            await expense.deleteOne(); // Use deleteOne() for Mongoose 6+
-            res.json({ message: 'Expense removed' });
-        } else {
-            res.status(404).json({ message: 'Expense not found' });
-        }
-    } catch (error) {
-        console.error('Error deleting expense:', error);
-        res.status(500).json({ message: 'Server error deleting expense' });
+    if (!expense) {
+        res.status(404);
+        throw new Error('Expense not found');
     }
-});
 
-// Apply 'protect' middleware to all expense routes
-router.route('/')
-    .get(protect, async (req, res) => {
-        try {
-            const expenses = await Expense.find({ user: req.user._id }).sort({ date: -1 });
-            res.json(expenses);
-        } catch (error) {
-            console.error('Error fetching expenses:', error);
-            res.status(500).json({ message: 'Server error fetching expenses' });
-        }
-    })
-    .post(protect, async (req, res) => {
-        const { amount, category, date, description } = req.body;
-        // ... (rest of add expense logic)
-    });
+    // Make sure the logged-in user owns the expense
+    if (expense.user.toString() !== req.user._id.toString()) {
+        res.status(401);
+        throw new Error('Not authorized to delete this expense');
+    }
 
-router.route('/:id')
-    .put(protect, async (req, res) => {
-        // ... (rest of update expense logic)
-    })
-    .delete(protect, async (req, res) => {
-        // ... (rest of delete expense logic)
-    });
+    await expense.deleteOne(); // Use deleteOne()
+    res.json({ message: 'Expense removed' });
+}));
 
 module.exports = router;
 

@@ -1,103 +1,89 @@
 // backend/routes/goalRoutes.js
 const express = require('express');
 const router = express.Router();
-const Goal = require('../models/Goal'); // <-- IMPORT THE GOAL MODEL
-const protect = require('../middleware/authMiddleware');
+const asyncHandler = require('express-async-handler');
+const Goal = require('../models/Goal');
+const { protect } = require('../middleware/authMiddleware'); // Import protect middleware
 
-// @desc    Get all goals for a user
+// @desc    Get all goals for the authenticated user
 // @route   GET /api/goals
 // @access  Private
-router.route('/')
-    .get(protect, async (req, res) => {
-        try {
-            const goals = await Goal.find({ user: req.user._id }).sort({ targetDate: 1 });
-            res.json(goals);
-        } catch (error) {
-            console.error('Error fetching goals:', error);
-            res.status(500).json({ message: 'Server error fetching goals' });
-        }
-    })
-    // @desc    Add a new goal
-    // @route   POST /api/goals
-    // @access  Private
-    .post(protect, async (req, res) => {
-        const { name, targetAmount, savedAmount, targetDate } = req.body;
+router.get('/', protect, asyncHandler(async (req, res) => {
+    // Find goals only for the logged-in user
+    const goals = await Goal.find({ user: req.user._id });
+    res.json(goals);
+}));
 
-        if (!name || !targetAmount || !targetDate) {
-            return res.status(400).json({ message: 'Please add a name, target amount, and target date for the goal' });
-        }
+// @desc    Add a new goal for the authenticated user
+// @route   POST /api/goals
+// @access  Private
+router.post('/', protect, asyncHandler(async (req, res) => {
+    const { name, targetAmount, savedAmount, targetDate } = req.body;
 
-        try {
-            const goal = new Goal({
-                user: req.user._id,
-                name,
-                targetAmount,
-                savedAmount: savedAmount || 0, // Default to 0 if not provided
-                targetDate,
-            });
+    if (!name || !targetAmount || !targetDate) {
+        res.status(400);
+        throw new Error('Please add all fields: name, target amount, and target date');
+    }
 
-            const createdGoal = await goal.save();
-            res.status(201).json(createdGoal);
-        } catch (error) {
-            console.error('Error adding goal:', error);
-            res.status(500).json({ message: 'Server error adding goal' });
-        }
+    const goal = await Goal.create({
+        user: req.user._id, // Assign the goal to the logged-in user
+        name,
+        targetAmount,
+        savedAmount: savedAmount || 0,
+        targetDate,
     });
 
-// @desc    Update a goal
+    res.status(201).json(goal);
+}));
+
+// @desc    Update a goal for the authenticated user
 // @route   PUT /api/goals/:id
 // @access  Private
-router.route('/:id')
-    .put(protect, async (req, res) => {
-        const { name, targetAmount, savedAmount, targetDate } = req.body;
+router.put('/:id', protect, asyncHandler(async (req, res) => {
+    const { name, targetAmount, savedAmount, targetDate } = req.body;
 
-        try {
-            const goal = await Goal.findById(req.params.id);
+    const goal = await Goal.findById(req.params.id);
 
-            if (goal) {
-                // Ensure the logged-in user owns this goal
-                if (goal.user.toString() !== req.user._id.toString()) {
-                    return res.status(401).json({ message: 'Not authorized to update this goal' });
-                }
+    if (!goal) {
+        res.status(404);
+        throw new Error('Goal not found');
+    }
 
-                goal.name = name || goal.name;
-                goal.targetAmount = targetAmount || goal.targetAmount;
-                goal.savedAmount = savedAmount !== undefined ? savedAmount : goal.savedAmount;
-                goal.targetDate = targetDate || goal.targetDate;
+    // Make sure the logged-in user owns the goal
+    if (goal.user.toString() !== req.user._id.toString()) {
+        res.status(401);
+        throw new Error('Not authorized to update this goal');
+    }
 
-                const updatedGoal = await goal.save();
-                res.json(updatedGoal);
-            } else {
-                res.status(404).json({ message: 'Goal not found' });
-            }
-        } catch (error) {
-            console.error('Error updating goal:', error);
-            res.status(500).json({ message: 'Server error updating goal' });
-        }
-    })
-    // @desc    Delete a goal
-    // @route   DELETE /api/goals/:id
-    // @access  Private
-    .delete(protect, async (req, res) => {
-        try {
-            const goal = await Goal.findById(req.params.id);
+    goal.name = name || goal.name;
+    goal.targetAmount = targetAmount || goal.targetAmount;
+    goal.savedAmount = savedAmount !== undefined ? savedAmount : goal.savedAmount;
+    goal.targetDate = targetDate || goal.targetDate;
 
-            if (goal) {
-                // Ensure the logged-in user owns this goal
-                if (goal.user.toString() !== req.user._id.toString()) {
-                    return res.status(401).json({ message: 'Not authorized to delete this goal' });
-                }
+    const updatedGoal = await goal.save();
+    res.json(updatedGoal);
+}));
 
-                await goal.deleteOne(); // Use deleteOne()
-                res.json({ message: 'Goal removed' });
-            } else {
-                res.status(404).json({ message: 'Goal not found' });
-            }
-        } catch (error) {
-            console.error('Error deleting goal:', error);
-            res.status(500).json({ message: 'Server error deleting goal' });
-        }
-    });
+// @desc    Delete a goal for the authenticated user
+// @route   DELETE /api/goals/:id
+// @access  Private
+router.delete('/:id', protect, asyncHandler(async (req, res) => {
+    const goal = await Goal.findById(req.params.id);
+
+    if (!goal) {
+        res.status(404);
+        throw new Error('Goal not found');
+    }
+
+    // Make sure the logged-in user owns the goal
+    if (goal.user.toString() !== req.user._id.toString()) {
+        res.status(401);
+        throw new Error('Not authorized to delete this goal');
+    }
+
+    await goal.deleteOne(); // Use deleteOne()
+    res.json({ message: 'Goal removed' });
+}));
 
 module.exports = router;
 

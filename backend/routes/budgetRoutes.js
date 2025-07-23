@@ -1,105 +1,89 @@
 // backend/routes/budgetRoutes.js
 const express = require('express');
 const router = express.Router();
+const asyncHandler = require('express-async-handler');
 const Budget = require('../models/Budget');
-const protect = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware'); // Import protect middleware
 
-// @desc    Get all budgets for a user
+// @desc    Get all budgets for the authenticated user
 // @route   GET /api/budgets
 // @access  Private
-router.route('/')
-    .get(protect, async (req, res) => {
-        try {
-            const budgets = await Budget.find({ user: req.user._id }).sort({ createdAt: -1 });
-            res.json(budgets);
-        } catch (error) {
-            console.error('Error fetching budgets:', error);
-            res.status(500).json({ message: 'Server error fetching budgets' });
-        }
-    })
-    // @desc    Add a new budget
-    // @route   POST /api/budgets
-    // @access  Private
-    .post(protect, async (req, res) => {
-        // --- DEBUG LOG: Check what backend receives ---
-        console.log('Backend received budget data:', req.body);
-        // --- END DEBUG LOG ---
+router.get('/', protect, asyncHandler(async (req, res) => {
+    // Find budgets only for the logged-in user
+    const budgets = await Budget.find({ user: req.user._id });
+    res.json(budgets);
+}));
 
-        const { category, limit, startDate, endDate } = req.body;
+// @desc    Add a new budget for the authenticated user
+// @route   POST /api/budgets
+// @access  Private
+router.post('/', protect, asyncHandler(async (req, res) => {
+    const { category, limit, startDate, endDate } = req.body;
 
-        if (!category || !limit || !startDate || !endDate) {
-            return res.status(400).json({ message: 'Please provide category, limit, start and end dates' });
-        }
+    if (!category || !limit || !endDate) {
+        res.status(400);
+        throw new Error('Please add all fields: category, limit, and end date');
+    }
 
-        try {
-            const budget = new Budget({
-                user: req.user._id,
-                category,
-                limit,
-                startDate,
-                endDate,
-            });
-
-            const createdBudget = await budget.save();
-            res.status(201).json(createdBudget);
-        } catch (error) {
-            console.error('Error adding budget:', error);
-            res.status(500).json({ message: 'Server error adding budget' });
-        }
+    const budget = await Budget.create({
+        user: req.user._id, // Assign the budget to the logged-in user
+        category,
+        limit,
+        startDate: startDate || Date.now(),
+        endDate,
     });
 
-// @desc    Update a budget
+    res.status(201).json(budget);
+}));
+
+// @desc    Update a budget for the authenticated user
 // @route   PUT /api/budgets/:id
 // @access  Private
-router.route('/:id')
-    .put(protect, async (req, res) => {
-        const { category, limit, startDate, endDate } = req.body;
+router.put('/:id', protect, asyncHandler(async (req, res) => {
+    const { category, limit, startDate, endDate } = req.body;
 
-        try {
-            const budget = await Budget.findById(req.params.id);
+    const budget = await Budget.findById(req.params.id);
 
-            if (budget) {
-                if (budget.user.toString() !== req.user._id.toString()) {
-                    return res.status(401).json({ message: 'Not authorized to update this budget' });
-                }
+    if (!budget) {
+        res.status(404);
+        throw new Error('Budget not found');
+    }
 
-                budget.category = category || budget.category;
-                budget.limit = limit || budget.limit;
-                budget.startDate = startDate || budget.startDate;
-                budget.endDate = endDate || budget.endDate;
+    // Make sure the logged-in user owns the budget
+    if (budget.user.toString() !== req.user._id.toString()) {
+        res.status(401);
+        throw new Error('Not authorized to update this budget');
+    }
 
-                const updatedBudget = await budget.save();
-                res.json(updatedBudget);
-            } else {
-                res.status(404).json({ message: 'Budget not found' });
-            }
-        } catch (error) {
-            console.error('Error updating budget:', error);
-            res.status(500).json({ message: 'Server error updating budget' });
-        }
-    })
-    // @desc    Delete a budget
-    // @route   DELETE /api/budgets/:id
-    // @access  Private
-    .delete(protect, async (req, res) => {
-        try {
-            const budget = await Budget.findById(req.params.id);
+    budget.category = category || budget.category;
+    budget.limit = limit || budget.limit;
+    budget.startDate = startDate || budget.startDate;
+    budget.endDate = endDate || budget.endDate;
 
-            if (budget) {
-                if (budget.user.toString() !== req.user._id.toString()) {
-                    return res.status(401).json({ message: 'Not authorized to delete this budget' });
-                }
+    const updatedBudget = await budget.save();
+    res.json(updatedBudget);
+}));
 
-                await budget.deleteOne();
-                res.json({ message: 'Budget removed' });
-            } else {
-                res.status(404).json({ message: 'Budget not found' });
-            }
-        } catch (error) {
-            console.error('Error deleting budget:', error);
-            res.status(500).json({ message: 'Server error deleting budget' });
-        }
-    });
+// @desc    Delete a budget for the authenticated user
+// @route   DELETE /api/budgets/:id
+// @access  Private
+router.delete('/:id', protect, asyncHandler(async (req, res) => {
+    const budget = await Budget.findById(req.params.id);
+
+    if (!budget) {
+        res.status(404);
+        throw new Error('Budget not found');
+    }
+
+    // Make sure the logged-in user owns the budget
+    if (budget.user.toString() !== req.user._id.toString()) {
+        res.status(401);
+        throw new Error('Not authorized to delete this budget');
+    }
+
+    await budget.deleteOne(); // Use deleteOne()
+    res.json({ message: 'Budget removed' });
+}));
 
 module.exports = router;
 

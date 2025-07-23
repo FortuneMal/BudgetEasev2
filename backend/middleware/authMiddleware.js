@@ -1,11 +1,11 @@
 // backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
+const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 
-const protect = async (req, res, next) => {
+const protect = asyncHandler(async (req, res, next) => {
     let token;
 
-    // Check if authorization header exists and starts with 'Bearer'
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             // Get token from header
@@ -14,20 +14,27 @@ const protect = async (req, res, next) => {
             // Verify token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            // Find user by ID from token and attach to request object (without password)
-            req.user = await User.findById(decoded.id).select('-password');
+            // Get user from the token and attach to request object
+            req.user = await User.findById(decoded.id).select('-password'); // Exclude password
+
+            if (!req.user) {
+                res.status(401);
+                throw new Error('Not authorized, user not found');
+            }
 
             next(); // Proceed to the next middleware/route handler
         } catch (error) {
-            console.error('Not authorized, token failed:', error);
-            res.status(401).json({ message: 'Not authorized, token failed' });
+            console.error(error);
+            res.status(401);
+            throw new Error('Not authorized, token failed');
         }
     }
 
     if (!token) {
-        res.status(401).json({ message: 'Not authorized, no token' });
+        res.status(401);
+        throw new Error('Not authorized, no token');
     }
-};
+});
 
-module.exports = protect;
+module.exports = { protect };
 

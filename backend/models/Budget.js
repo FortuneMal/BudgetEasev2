@@ -4,38 +4,35 @@ const mongoose = require('mongoose');
 const budgetSchema = mongoose.Schema(
     {
         user: {
-            type: mongoose.Schema.Types.ObjectId, // Links to the User model
+            type: mongoose.Schema.Types.ObjectId,
             required: true,
             ref: 'User', // Reference to the User model
         },
         category: {
             type: String,
-            required: true,
-            // A user should generally have one budget per category for a given period,
-            // but unique: true here might be too restrictive if periods overlap.
-            // For now, let's keep it as is, but be aware for future enhancements.
-            // unique: true, // Removed unique constraint for now to avoid complexity with date ranges
-            enum: ['Food', 'Transport', 'Housing', 'Utilities', 'Entertainment', 'Shopping', 'Health', 'Education', 'Other', 'Overall'], // 'Overall' for total budget
+            required: [true, 'Please add a category'],
+            unique: false, // Category can be repeated for different users
         },
-        limit: { // The maximum amount budgeted for this category
+        limit: {
             type: Number,
-            required: true,
+            required: [true, 'Please add a limit'],
         },
         startDate: {
-            type: Date, // Ensure this is explicitly Date type
-            required: true,
+            type: Date,
+            default: Date.now,
         },
         endDate: {
-            type: Date, // Ensure this is explicitly Date type
-            required: true,
+            type: Date,
+            required: [true, 'Please add an end date'],
         },
     },
     {
-        timestamps: true, // Adds createdAt and updatedAt fields automatically
+        timestamps: true,
     }
 );
 
-const Budget = mongoose.model('Budget', budgetSchema);
+// Add a unique compound index to ensure a user cannot have two budgets for the same category
+budgetSchema.index({ user: 1, category: 1 }, { unique: true });
 
-module.exports = Budget;
+module.exports = mongoose.model('Budget', budgetSchema);
 

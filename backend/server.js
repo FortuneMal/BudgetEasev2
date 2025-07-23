@@ -1,47 +1,40 @@
 // backend/server.js
 const express = require('express');
-const bodyParser = require('body-parser');
+const dotenv = require('dotenv');
 const cors = require('cors');
-const dotenv = require('dotenv'); // For environment variables
-const connectDB = require('./config/db'); // Import the DB connection function
-
-// Load environment variables from .env file
-dotenv.config();
-
-// Connect to MongoDB
-connectDB();
-
-// --- Initialize Express App (THIS MUST COME BEFORE app.use/get/post) ---
-const app = express();
-// --- End Initialization ---
-
-const port = process.env.PORT || 3001; // Use port from .env or default to 3001
-
-// Middleware (These must come after app is initialized)
-app.use(bodyParser.json());
-app.use(cors());
-
-// Import routes (These must come after app is initialized)
+const connectDB = require('./config/db'); // Ensure this path is correct
 const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const budgetRoutes = require('./routes/budgetRoutes');
 const goalRoutes = require('./routes/goalRoutes');
-const currencyRoutes = require('./routes/currencyRoutes'); // Import currency routes
+const currencyRoutes = require('./routes/currencyRoutes');
+const { notFound, errorHandler } = require('./middleware/errorMiddleware'); // Import error handlers
 
-// Use routes (These must come after app is initialized and routes are imported)
+dotenv.config(); // Load environment variables
+connectDB(); // Connect to MongoDB
+
+const app = express();
+
+// Middleware to parse JSON bodies
+app.use(express.json());
+
+// Enable CORS for all origins (you might want to restrict this in production)
+app.use(cors());
+
+// Define API routes
 app.use('/api/users', userRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/goals', goalRoutes);
-app.use('/api/currency', currencyRoutes); // Use currency routes
+app.use('/api/currency', currencyRoutes);
 
-// Basic route for testing server
-app.get('/', (req, res) => {
-    res.send('BudgetEase API is running...');
-});
+// Custom error handling middleware
+app.use(notFound);
+app.use(errorHandler);
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Backend server listening at http://localhost:${port}`);
+const PORT = process.env.PORT || 3001;
+
+app.listen(PORT, () => {
+    console.log(`Backend server listening at http://localhost:${PORT}`);
 });
 
