@@ -2,23 +2,24 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const connectDB = require('./config/db'); // Ensure this path is correct
+const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const budgetRoutes = require('./routes/budgetRoutes');
 const goalRoutes = require('./routes/goalRoutes');
 const currencyRoutes = require('./routes/currencyRoutes');
-const { notFound, errorHandler } = require('./middleware/errorMiddleware'); // Import error handlers
+const { notFound, errorHandler } = require('./middleware/errorMiddleware'); // Ensure this path is correct
 
-dotenv.config(); // Load environment variables
-connectDB(); // Connect to MongoDB
+dotenv.config();
+connectDB();
 
 const app = express();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(express.urlencoded({ extended: false })); // For URL-encoded data
 
-// Enable CORS for all origins (you might want to restrict this in production)
+// Enable CORS - IMPORTANT: In production, restrict origin to your frontend URL
 app.use(cors());
 
 // Define API routes
@@ -28,7 +29,12 @@ app.use('/api/budgets', budgetRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/currency', currencyRoutes);
 
-// Custom error handling middleware
+// Basic route for testing server
+app.get('/', (req, res) => {
+    res.send('BudgetEase API is running...');
+});
+
+// Custom error handling middleware (must be after routes)
 app.use(notFound);
 app.use(errorHandler);
 

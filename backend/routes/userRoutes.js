@@ -1,7 +1,7 @@
 // backend/routes/userRoutes.js
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User'); // Import the User model
+const User = require('../models/User');
 const generateToken = require('../utils/generateToken'); // Import generateToken
 const asyncHandler = require('express-async-handler'); // For simplified async error handling
 
@@ -11,7 +11,6 @@ const asyncHandler = require('express-async-handler'); // For simplified async e
 router.post('/register', asyncHandler(async (req, res) => {
     const { name, username, password } = req.body;
 
-    // Basic validation
     if (!name || !username || !password) {
         res.status(400);
         throw new Error('Please enter all fields: name, username, and password');
@@ -64,14 +63,19 @@ router.post('/login', asyncHandler(async (req, res) => {
     }
 }));
 
-// @desc    Get user profile
+// @desc    Get user profile (example of a protected route)
 // @route   GET /api/users/profile
 // @access  Private (requires authentication middleware)
 // This route would typically be protected by the 'protect' middleware
 // For now, it's a placeholder, but in a real app, req.user would come from JWT
 router.get('/profile', asyncHandler(async (req, res) => {
-    // This route would be protected by the 'protect' middleware
-    // For now, let's just return a placeholder or mock data if not protected
+    // Example: If this route were protected by 'protect', req.user would be available
+    // if (req.user) {
+    //     res.json({ user: req.user });
+    // } else {
+    //     res.status(401);
+    //     throw new Error('Not authorized, no user data');
+    // }
     res.json({ message: 'User profile data (requires authentication)' });
 }));
 

@@ -2,8 +2,7 @@
 const jwt = require('jsonwebtoken');
 
 const generateToken = (id) => {
-    // Ensure JWT_SECRET is set in your backend/.env file
-    // e.g., JWT_SECRET=your_super_secret_jwt_key_here
+    // Uses the JWT_SECRET from your .env file
     return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: '30d', // Token expires in 30 days
     });
