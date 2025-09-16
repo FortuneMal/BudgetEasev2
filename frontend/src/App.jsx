@@ -1,24 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import budgetEaseLogo from './assets/budgetease logo.png';
 
-// Function to get the default currency code based on the user's locale
+// Function to get the default currency code.
 const getDefaultCurrency = () => {
-  try {
-    // Get the user's locale (e.g., 'en-ZA')
-    const locale = navigator.language;
-    // Format a number to a currency string and extract the currency code
-    const parts = new Intl.NumberFormat(locale, { style: 'currency', currencyDisplay: 'code' }).formatToParts(0);
-    const currencyPart = parts.find((part) => part.type === 'currency');
-    return currencyPart ? currencyPart.value : 'USD';
-  } catch (e) {
-    console.error('Failed to get default currency:', e);
-    return 'USD'; // Default to USD if locale detection fails
-  }
+  return 'USD';
 };
 
 // Function to format a number into a currency string
 const formatCurrency = (amount, currencyCode) => {
-  // Use the user's locale to format the number
   const locale = navigator.language;
   return new Intl.NumberFormat(locale, {
     style: 'currency',
@@ -26,9 +14,7 @@ const formatCurrency = (amount, currencyCode) => {
   }).format(amount);
 };
 
-// A list of supported currencies
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'ZAR', 'JPY', 'AUD', 'CAD'];
-
 const API_URL = 'http://localhost:5000/api';
 
 // LogoHeader Component
@@ -37,7 +23,7 @@ const LogoHeader = () => {
     <header className="bg-white dark:bg-gray-800 shadow-md p-4 mb-8 rounded-lg flex items-center justify-center">
       <div className="flex items-center space-x-4">
         <img
-          src={budgetEaseLogo}
+          src="https://placehold.co/60x60/22c55e/ffffff?text=BE"
           alt="BudgetEase Logo"
           className="h-12 w-auto rounded-lg"
         />
@@ -434,6 +420,210 @@ const ExpenseList = ({ expenses, onEdit, onDelete, selectedCurrency }) => {
   );
 };
 
+// --- NEW COMPONENT: BudgetForm ---
+const BudgetForm = ({ categories, categoryBudgets, onSetBudget, selectedCurrency }) => {
+  const [category, setCategory] = useState(categories[0]);
+  const [amount, setAmount] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (amount) {
+      onSetBudget(category, parseFloat(amount));
+      setAmount('');
+    }
+  };
+
+  return (
+    <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-md mb-6">
+      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Set Monthly Budgets</h3>
+      <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 items-end">
+        <div className="flex-1 w-full">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="budgetCategory">
+            Category
+          </label>
+          <select
+            id="budgetCategory"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {categories.map((cat) => (
+              <option key={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex-1 w-full">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="budgetAmount">
+            Amount
+          </label>
+          <input
+            type="number"
+            id="budgetAmount"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full md:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+        >
+          Set Budget
+        </button>
+      </form>
+    </div>
+  );
+};
+
+// --- NEW COMPONENT: IncomeForm ---
+const IncomeForm = ({ onAddIncome }) => {
+  const [source, setSource] = useState('');
+  const [amount, setAmount] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (source && amount) {
+      onAddIncome({ source, amount: parseFloat(amount), date: new Date().toISOString() });
+      setSource('');
+      setAmount('');
+    }
+  };
+
+  return (
+    <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-md mb-6">
+      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Add Income</h3>
+      <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 items-end">
+        <div className="flex-1 w-full">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="incomeSource">
+            Source
+          </label>
+          <input
+            type="text"
+            id="incomeSource"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
+            required
+          />
+        </div>
+        <div className="flex-1 w-full">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="incomeAmount">
+            Amount
+          </label>
+          <input
+            type="number"
+            id="incomeAmount"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full md:w-auto bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+        >
+          Add Income
+        </button>
+      </form>
+    </div>
+  );
+};
+
+// --- NEW COMPONENT: FinancialGoals ---
+const FinancialGoals = ({ goals, onAddGoal, onRemoveGoal, totalSavings, selectedCurrency }) => {
+  const [goalName, setGoalName] = useState('');
+  const [goalAmount, setGoalAmount] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (goalName && goalAmount) {
+      const newGoal = {
+        id: Date.now(),
+        name: goalName,
+        target: parseFloat(goalAmount),
+        progress: 0,
+      };
+      onAddGoal(newGoal);
+      setGoalName('');
+      setGoalAmount('');
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Financial Goals</h3>
+      
+      {/* Goal Form */}
+      <form onSubmit={handleSubmit} className="mb-6 flex flex-col md:flex-row gap-4 items-end">
+        <div className="flex-1 w-full">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="goalName">Goal Name</label>
+          <input
+            type="text"
+            id="goalName"
+            className="w-full px-3 py-2 border rounded-lg shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+            value={goalName}
+            onChange={(e) => setGoalName(e.target.value)}
+            required
+          />
+        </div>
+        <div className="flex-1 w-full">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="goalAmount">Target Amount</label>
+          <input
+            type="number"
+            id="goalAmount"
+            className="w-full px-3 py-2 border rounded-lg shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+            value={goalAmount}
+            onChange={(e) => setGoalAmount(e.target.value)}
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full md:w-auto bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300"
+        >
+          Add Goal
+        </button>
+      </form>
+
+      {/* Goal List */}
+      <ul className="space-y-4">
+        {goals.length === 0 ? (
+          <p className="text-gray-500 dark:text-gray-400 text-center">No goals set yet.</p>
+        ) : (
+          goals.map(goal => {
+            const progress = Math.min(totalSavings, goal.target);
+            const progressPercentage = (progress / goal.target) * 100;
+            return (
+              <li key={goal.id} className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-sm">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100">{goal.name}</h4>
+                  <button onClick={() => onRemoveGoal(goal.id)} className="text-red-500 hover:text-red-700">
+                    &times;
+                  </button>
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  {formatCurrency(progress, selectedCurrency)} of {formatCurrency(goal.target, selectedCurrency)}
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-600">
+                  <div
+                    className="bg-indigo-500 h-2.5 rounded-full transition-all duration-500 ease-out"
+                    style={{ width: `${progressPercentage}%` }}
+                  ></div>
+                </div>
+                <div className="text-right text-xs mt-1 text-gray-600 dark:text-gray-400">
+                  {progressPercentage.toFixed(0)}%
+                </div>
+              </li>
+            );
+          })
+        )}
+      </ul>
+    </div>
+  );
+};
+
 // Dashboard Component
 const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) => {
   const [expenses, setExpenses] = useState([]);
@@ -443,7 +633,13 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
   const [filterCategory, setFilterCategory] = useState('All');
   const [sortBy, setSortBy] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [budget, setBudget] = useState(5000); // New state for budget
+  
+  // --- NEW STATE for Financial Tracking ---
+  const [income, setIncome] = useState([]);
+  const [categoryBudgets, setCategoryBudgets] = useState(JSON.parse(localStorage.getItem('categoryBudgets')) || {});
+  const [goals, setGoals] = useState(JSON.parse(localStorage.getItem('goals')) || []);
+  const [theme, setTheme] = useState('light'); // New state for theme
+  const categories = ['Groceries', 'Utilities', 'Entertainment', 'Transportation', 'Other'];
 
   const token = localStorage.getItem('token');
   const fetchExpenses = async () => {
@@ -458,6 +654,11 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
       const response = await fetch(`${API_URL}/expenses?${queryParams.toString()}`, {
         headers: { 'x-auth-token': token },
       });
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        onNavigate('login');
+        return;
+      }
       if (response.ok) {
         const data = await response.json();
         setExpenses(data);
@@ -540,14 +741,40 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
     onNavigate('login');
   };
 
+  // --- NEW FUNCTIONS for Financial Tracking ---
+  const handleSetBudget = (category, amount) => {
+    const newBudgets = { ...categoryBudgets, [category]: amount };
+    setCategoryBudgets(newBudgets);
+    localStorage.setItem('categoryBudgets', JSON.stringify(newBudgets));
+  };
+  
+  const handleAddIncome = (newIncome) => {
+    const newIncomeList = [...income, newIncome];
+    setIncome(newIncomeList);
+    // For simplicity, we won't persist income yet, but a future backend would.
+  };
+
+  const handleAddGoal = (newGoal) => {
+    const newGoals = [...goals, newGoal];
+    setGoals(newGoals);
+    localStorage.setItem('goals', JSON.stringify(newGoals));
+  };
+
+  const handleRemoveGoal = (goalId) => {
+    const newGoals = goals.filter(goal => goal.id !== goalId);
+    setGoals(newGoals);
+    localStorage.setItem('goals', JSON.stringify(newGoals));
+  };
+
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-  const remainingBudget = budget - totalExpenses;
+  const totalIncome = income.reduce((sum, inc) => sum + inc.amount, 0);
+  const netSavings = totalIncome - totalExpenses;
 
   if (loading) return <div className="text-center text-lg mt-8">Loading...</div>;
   if (error) return <div className="text-center text-lg text-red-500 mt-8">Error: {error}</div>;
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
+    <div className={`flex flex-col items-center min-h-screen ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-900'} p-4`}>
       <div className="w-full max-w-4xl">
         <LogoHeader />
         <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
@@ -582,92 +809,113 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
           <p className="text-gray-700 dark:text-gray-300 mb-4">
             This is where you'll manage your budget, track expenses, and view your financial insights.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <div className="bg-blue-100 dark:bg-blue-900 p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-bold text-blue-800 dark:text-blue-200 mb-2">Total Budget</h3>
-              <p className="text-2xl font-extrabold text-blue-900 dark:text-blue-100">{formatCurrency(budget, selectedCurrency)}</p>
-            </div>
+          
+          {/* --- UPDATED FINANCIAL OVERVIEW --- */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <div className="bg-green-100 dark:bg-green-900 p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-bold text-green-800 dark:text-green-200 mb-2">Expenses</h3>
-              <p className="text-2xl font-extrabold text-green-900 dark:text-green-100">{formatCurrency(totalExpenses, selectedCurrency)}</p>
+              <h3 className="text-lg font-bold text-green-800 dark:text-green-200 mb-2">Total Income</h3>
+              <p className="text-2xl font-extrabold text-green-900 dark:text-green-100">{formatCurrency(totalIncome, selectedCurrency)}</p>
             </div>
-            <div className="bg-yellow-100 dark:bg-yellow-900 p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-bold text-yellow-800 dark:text-yellow-200 mb-2">Remaining</h3>
-              <p className="text-2xl font-extrabold text-yellow-900 dark:text-yellow-100">{formatCurrency(remainingBudget, selectedCurrency)}</p>
+            <div className="bg-red-100 dark:bg-red-900 p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-bold text-red-800 dark:text-red-200 mb-2">Total Expenses</h3>
+              <p className="text-2xl font-extrabold text-red-900 dark:text-red-100">{formatCurrency(totalExpenses, selectedCurrency)}</p>
             </div>
-          </div>
-
-          <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-md mb-6">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Adjust Your Budget</h3>
-            <div className="flex items-center gap-4">
-              <label htmlFor="budget-input" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                New Budget Amount:
-              </label>
-              <input
-                id="budget-input"
-                type="number"
-                value={budget}
-                onChange={(e) => setBudget(parseFloat(e.target.value) || 0)}
-                className="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
-              />
+            <div className="bg-blue-100 dark:bg-blue-900 p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-bold text-blue-800 dark:text-blue-200 mb-2">Net Cash Flow</h3>
+              <p className="text-2xl font-extrabold text-blue-900 dark:text-blue-100">{formatCurrency(netSavings, selectedCurrency)}</p>
+            </div>
+             <div className="bg-purple-100 dark:bg-purple-900 p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-bold text-purple-800 dark:text-purple-200 mb-2">Remaining Budget</h3>
+              <p className="text-2xl font-extrabold text-purple-900 dark:text-purple-100">N/A</p>
             </div>
           </div>
 
-          <div className="mt-8">
+          {/* --- NEW SECTION: Category Budgets Progress --- */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Budget Progress by Category</h3>
+            <div className="space-y-4">
+              {categories.map(cat => {
+                const totalSpent = expenses.filter(exp => exp.category === cat).reduce((sum, exp) => sum + exp.amount, 0);
+                const budgetAmount = categoryBudgets[cat] || 0;
+                const progressPercentage = budgetAmount > 0 ? (totalSpent / budgetAmount) * 100 : 0;
+                const progressColor = progressPercentage > 100 ? 'bg-red-500' : 'bg-blue-500';
+
+                return (
+                  <div key={cat}>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">{cat}</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {formatCurrency(totalSpent, selectedCurrency)} / {formatCurrency(budgetAmount, selectedCurrency)}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-600">
+                      <div
+                        className={`${progressColor} h-2.5 rounded-full transition-all duration-500`}
+                        style={{ width: `${Math.min(100, progressPercentage)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          <BudgetForm categories={categories} categoryBudgets={categoryBudgets} onSetBudget={handleSetBudget} selectedCurrency={selectedCurrency} />
+          <IncomeForm onAddIncome={handleAddIncome} />
+          <ExpenseForm 
+            onAddExpense={handleAddExpense} 
+            onUpdateExpense={handleUpdateExpense}
+            editingExpense={editingExpense}
+            onCancelEdit={handleCancelEdit}
+          />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
             <SpendingChart expenses={expenses} selectedCurrency={selectedCurrency} />
-            <ExpenseForm 
-              onAddExpense={handleAddExpense} 
-              onUpdateExpense={handleUpdateExpense}
-              editingExpense={editingExpense}
-              onCancelEdit={handleCancelEdit}
-            />
+            <FinancialGoals goals={goals} onAddGoal={handleAddGoal} onRemoveGoal={handleRemoveGoal} totalSavings={netSavings} selectedCurrency={selectedCurrency} />
+          </div>
 
-            {/* Filter, Sort, and Search Controls */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <input
-                  type="text"
-                  placeholder="Search expenses..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
-                />
-                <select
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mt-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <input
+                type="text"
+                placeholder="Search expenses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
+              />
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
+              >
+                <option value="All">All Categories</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+              <div className="w-full md:w-1/3 flex justify-end gap-2">
+                <button
+                  onClick={() => setSortBy('amount_desc')}
+                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'amount_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
                 >
-                  <option value="All">All Categories</option>
-                  <option value="Groceries">Groceries</option>
-                  <option value="Utilities">Utilities</option>
-                  <option value="Entertainment">Entertainment</option>
-                  <option value="Transportation">Transportation</option>
-                  <option value="Other">Other</option>
-                </select>
-                <div className="w-full md:w-1/3 flex justify-end gap-2">
-                  <button
-                    onClick={() => setSortBy('amount_desc')}
-                    className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'amount_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                  >
-                    Sort by Amount
-                  </button>
-                  <button
-                    onClick={() => setSortBy('date_desc')}
-                    className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'date_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                  >
-                    Sort by Date
-                  </button>
-                </div>
+                  Sort by Amount
+                </button>
+                <button
+                  onClick={() => setSortBy('date_desc')}
+                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'date_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
+                >
+                  Sort by Date
+                </button>
               </div>
             </div>
-
-            <ExpenseList 
-              expenses={expenses} 
-              onEdit={handleEditExpense} 
-              onDelete={handleDeleteExpense} 
-              selectedCurrency={selectedCurrency}
-            />
           </div>
+
+          <ExpenseList 
+            expenses={expenses} 
+            onEdit={handleEditExpense} 
+            onDelete={handleDeleteExpense} 
+            selectedCurrency={selectedCurrency}
+          />
         </div>
       </div>
     </div>
