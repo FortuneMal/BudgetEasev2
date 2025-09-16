@@ -1,6 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import budgetEaseLogo from './assets/budgetease logo.png';
 
+// Function to get the default currency code based on the user's locale
+const getDefaultCurrency = () => {
+  try {
+    // Get the user's locale (e.g., 'en-ZA')
+    const locale = navigator.language;
+    // Format a number to a currency string and extract the currency code
+    const parts = new Intl.NumberFormat(locale, { style: 'currency', currencyDisplay: 'code' }).formatToParts(0);
+    const currencyPart = parts.find((part) => part.type === 'currency');
+    return currencyPart ? currencyPart.value : 'USD';
+  } catch (e) {
+    console.error('Failed to get default currency:', e);
+    return 'USD'; // Default to USD if locale detection fails
+  }
+};
+
+// Function to format a number into a currency string
+const formatCurrency = (amount, currencyCode) => {
+  // Use the user's locale to format the number
+  const locale = navigator.language;
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currencyCode,
+  }).format(amount);
+};
+
+// A list of supported currencies
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'ZAR', 'JPY', 'AUD', 'CAD'];
+
 const API_URL = 'http://localhost:5000/api';
 
 // LogoHeader Component
@@ -199,7 +227,7 @@ const RegisterPage = ({ onAuthSuccess, onNavigate }) => {
 };
 
 // SpendingChart Component
-const SpendingChart = ({ expenses }) => {
+const SpendingChart = ({ expenses, selectedCurrency }) => {
   const categories = ['Groceries', 'Utilities', 'Entertainment', 'Transportation', 'Other'];
   const spendingByCategory = categories.map(category => {
     const total = expenses
@@ -226,7 +254,7 @@ const SpendingChart = ({ expenses }) => {
             <div
               className={`w-3/5 rounded-t-lg transition-all duration-500 ${colors[item.category]}`}
               style={{ height: `${(item.total / maxSpending) * 100}%` }}
-              title={`$${item.total.toFixed(2)}`}
+              title={formatCurrency(item.total, selectedCurrency)}
             ></div>
             <span className="mt-2 text-xs font-semibold text-gray-600 dark:text-gray-400">{item.category}</span>
           </div>
@@ -241,12 +269,14 @@ const ExpenseForm = ({ onAddExpense, onUpdateExpense, editingExpense, onCancelEd
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Groceries');
+  const [isRecurring, setIsRecurring] = useState(false);
 
   useEffect(() => {
     if (editingExpense) {
       setName(editingExpense.name);
       setAmount(editingExpense.amount.toString());
       setCategory(editingExpense.category);
+      setIsRecurring(editingExpense.isRecurring);
     }
   }, [editingExpense]);
 
@@ -271,12 +301,14 @@ const ExpenseForm = ({ onAddExpense, onUpdateExpense, editingExpense, onCancelEd
         name,
         amount: parseFloat(amount),
         category,
+        isRecurring,
       };
       onAddExpense(newExpense);
     }
 
     setName('');
     setAmount('');
+    setIsRecurring(false);
   };
 
   return (
@@ -300,7 +332,7 @@ const ExpenseForm = ({ onAddExpense, onUpdateExpense, editingExpense, onCancelEd
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="amount">
-            Amount ($)
+            Amount
           </label>
           <input
             type="number"
@@ -328,7 +360,19 @@ const ExpenseForm = ({ onAddExpense, onUpdateExpense, editingExpense, onCancelEd
             <option>Other</option>
           </select>
         </div>
-        <div className="flex items-center gap-2 md:col-span-2 lg:col-span-3">
+        <div className="flex items-center gap-2 lg:col-span-1">
+          <input
+            type="checkbox"
+            id="isRecurring"
+            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600"
+            checked={isRecurring}
+            onChange={(e) => setIsRecurring(e.target.checked)}
+          />
+          <label htmlFor="isRecurring" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Recurring Expense
+          </label>
+        </div>
+        <div className="flex items-center gap-2 md:col-span-2 lg:col-span-2">
           <button
             type="submit"
             className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -351,7 +395,7 @@ const ExpenseForm = ({ onAddExpense, onUpdateExpense, editingExpense, onCancelEd
 };
 
 // ExpenseList Component
-const ExpenseList = ({ expenses, onEdit, onDelete }) => {
+const ExpenseList = ({ expenses, onEdit, onDelete, selectedCurrency }) => {
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
       <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Recent Expenses</h3>
@@ -360,13 +404,15 @@ const ExpenseList = ({ expenses, onEdit, onDelete }) => {
       ) : (
         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
           {expenses.map((expense) => (
-            <li key={expense._id} className="py-4 flex items-center justify-between">
+            <li key={expense._id} className={`py-4 flex items-center justify-between ${expense.isRecurring ? 'bg-indigo-50 dark:bg-indigo-900 rounded-lg p-2' : ''}`}>
               <div className="flex flex-col">
-                <span className="text-gray-900 dark:text-gray-100 font-medium">{expense.name}</span>
+                <span className="text-gray-900 dark:text-gray-100 font-medium">
+                  {expense.name} {expense.isRecurring && <span className="text-xs text-indigo-500 dark:text-indigo-300">(Recurring)</span>}
+                </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">{expense.category}</span>
               </div>
               <div className="flex items-center space-x-2">
-                <span className="text-red-600 dark:text-red-400 font-semibold">${expense.amount.toFixed(2)}</span>
+                <span className="text-red-600 dark:text-red-400 font-semibold">{formatCurrency(expense.amount, selectedCurrency)}</span>
                 <button
                   onClick={() => onEdit(expense)}
                   className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 text-xs py-1 px-2 rounded"
@@ -389,16 +435,27 @@ const ExpenseList = ({ expenses, onEdit, onDelete }) => {
 };
 
 // Dashboard Component
-const DashboardPage = ({ onNavigate }) => {
+const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) => {
   const [expenses, setExpenses] = useState([]);
   const [editingExpense, setEditingExpense] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filterCategory, setFilterCategory] = useState('All');
+  const [sortBy, setSortBy] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [budget, setBudget] = useState(5000); // New state for budget
 
   const token = localStorage.getItem('token');
   const fetchExpenses = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch(`${API_URL}/expenses`, {
+      const queryParams = new URLSearchParams();
+      if (filterCategory !== 'All') queryParams.append('category', filterCategory);
+      if (sortBy) queryParams.append('sort', sortBy);
+      if (searchQuery) queryParams.append('search', searchQuery);
+
+      const response = await fetch(`${API_URL}/expenses?${queryParams.toString()}`, {
         headers: { 'x-auth-token': token },
       });
       if (response.ok) {
@@ -418,7 +475,7 @@ const DashboardPage = ({ onNavigate }) => {
     if (token) {
       fetchExpenses();
     }
-  }, [token]);
+  }, [token, filterCategory, sortBy, searchQuery]);
 
   const handleAddExpense = async (newExpense) => {
     try {
@@ -484,7 +541,7 @@ const DashboardPage = ({ onNavigate }) => {
   };
 
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-  const remainingBudget = 5000 - totalExpenses;
+  const remainingBudget = budget - totalExpenses;
 
   if (loading) return <div className="text-center text-lg mt-8">Loading...</div>;
   if (error) return <div className="text-center text-lg text-red-500 mt-8">Error: {error}</div>;
@@ -494,16 +551,33 @@ const DashboardPage = ({ onNavigate }) => {
       <div className="w-full max-w-4xl">
         <LogoHeader />
         <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between mb-6 space-y-4 sm:space-y-0">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               Welcome to your Dashboard
             </h2>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
-            >
-              Logout
-            </button>
+            <div className="flex items-center space-x-4">
+              <label htmlFor="currency-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Currency:
+              </label>
+              <select
+                id="currency-select"
+                value={selectedCurrency}
+                onChange={(e) => setSelectedCurrency(e.target.value)}
+                className="px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+              >
+                {CURRENCIES.map(code => (
+                  <option key={code} value={code}>
+                    {code}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
+              >
+                Logout
+              </button>
+            </div>
           </div>
           <p className="text-gray-700 dark:text-gray-300 mb-4">
             This is where you'll manage your budget, track expenses, and view your financial insights.
@@ -511,29 +585,87 @@ const DashboardPage = ({ onNavigate }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
             <div className="bg-blue-100 dark:bg-blue-900 p-6 rounded-lg shadow-md">
               <h3 className="text-lg font-bold text-blue-800 dark:text-blue-200 mb-2">Total Budget</h3>
-              <p className="text-2xl font-extrabold text-blue-900 dark:text-blue-100">$5,000</p>
+              <p className="text-2xl font-extrabold text-blue-900 dark:text-blue-100">{formatCurrency(budget, selectedCurrency)}</p>
             </div>
             <div className="bg-green-100 dark:bg-green-900 p-6 rounded-lg shadow-md">
               <h3 className="text-lg font-bold text-green-800 dark:text-green-200 mb-2">Expenses</h3>
-              <p className="text-2xl font-extrabold text-green-900 dark:text-green-100">${totalExpenses.toFixed(2)}</p>
+              <p className="text-2xl font-extrabold text-green-900 dark:text-green-100">{formatCurrency(totalExpenses, selectedCurrency)}</p>
             </div>
             <div className="bg-yellow-100 dark:bg-yellow-900 p-6 rounded-lg shadow-md">
               <h3 className="text-lg font-bold text-yellow-800 dark:text-yellow-200 mb-2">Remaining</h3>
-              <p className="text-2xl font-extrabold text-yellow-900 dark:text-yellow-100">${remainingBudget.toFixed(2)}</p>
+              <p className="text-2xl font-extrabold text-yellow-900 dark:text-yellow-100">{formatCurrency(remainingBudget, selectedCurrency)}</p>
             </div>
           </div>
+
+          <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-md mb-6">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Adjust Your Budget</h3>
+            <div className="flex items-center gap-4">
+              <label htmlFor="budget-input" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                New Budget Amount:
+              </label>
+              <input
+                id="budget-input"
+                type="number"
+                value={budget}
+                onChange={(e) => setBudget(parseFloat(e.target.value) || 0)}
+                className="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+              />
+            </div>
+          </div>
+
           <div className="mt-8">
-            <SpendingChart expenses={expenses} />
+            <SpendingChart expenses={expenses} selectedCurrency={selectedCurrency} />
             <ExpenseForm 
               onAddExpense={handleAddExpense} 
               onUpdateExpense={handleUpdateExpense}
               editingExpense={editingExpense}
               onCancelEdit={handleCancelEdit}
             />
+
+            {/* Filter, Sort, and Search Controls */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <input
+                  type="text"
+                  placeholder="Search expenses..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
+                />
+                <select
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
+                >
+                  <option value="All">All Categories</option>
+                  <option value="Groceries">Groceries</option>
+                  <option value="Utilities">Utilities</option>
+                  <option value="Entertainment">Entertainment</option>
+                  <option value="Transportation">Transportation</option>
+                  <option value="Other">Other</option>
+                </select>
+                <div className="w-full md:w-1/3 flex justify-end gap-2">
+                  <button
+                    onClick={() => setSortBy('amount_desc')}
+                    className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'amount_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
+                  >
+                    Sort by Amount
+                  </button>
+                  <button
+                    onClick={() => setSortBy('date_desc')}
+                    className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'date_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
+                  >
+                    Sort by Date
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <ExpenseList 
               expenses={expenses} 
               onEdit={handleEditExpense} 
               onDelete={handleDeleteExpense} 
+              selectedCurrency={selectedCurrency}
             />
           </div>
         </div>
@@ -546,6 +678,7 @@ const DashboardPage = ({ onNavigate }) => {
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
   const [currentPage, setCurrentPage] = useState(isAuthenticated ? 'dashboard' : 'login');
+  const [selectedCurrency, setSelectedCurrency] = useState(getDefaultCurrency());
 
   const navigateTo = (pageName) => {
     setCurrentPage(pageName);
@@ -558,7 +691,7 @@ const App = () => {
 
   const renderPage = () => {
     if (isAuthenticated) {
-      return <DashboardPage onNavigate={navigateTo} />;
+      return <DashboardPage onNavigate={navigateTo} selectedCurrency={selectedCurrency} setSelectedCurrency={setSelectedCurrency} />;
     }
     switch (currentPage) {
       case 'login':
