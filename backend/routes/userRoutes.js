@@ -2,13 +2,25 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const generateToken = require('../utils/generateToken'); // Import generateToken
-const asyncHandler = require('express-async-handler'); // For simplified async error handling
+const generateToken = require('../utils/generateToken');
+const asyncHandler = require('express-async-handler');
+const { protect } = require('../middleware/authMiddleware');
+const rateLimit = require('express-rate-limit'); // Import rate-limit
+
+// Stricter rate limit for authentication routes
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Allow only 5 attempts per IP per 15 minutes
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: 'Too many login attempts from this IP, please try again after 15 minutes.'
+});
+
 
 // @desc    Register a new user
 // @route   POST /api/users/register
 // @access  Public
-router.post('/register', asyncHandler(async (req, res) => {
+router.post('/register', authLimiter, asyncHandler(async (req, res) => {
     const { name, username, password } = req.body;
 
     if (!name || !username || !password) {
@@ -26,7 +38,7 @@ router.post('/register', asyncHandler(async (req, res) => {
     const user = await User.create({
         name,
         username,
-        password, // Password will be hashed by the pre-save middleware in User.js
+        password,
     });
 
     if (user) {
@@ -34,7 +46,7 @@ router.post('/register', asyncHandler(async (req, res) => {
             _id: user._id,
             name: user.name,
             username: user.username,
-            token: generateToken(user._id), // Generate and send token
+            token: generateToken(user._id),
         });
     } else {
         res.status(400);
@@ -45,7 +57,7 @@ router.post('/register', asyncHandler(async (req, res) => {
 // @desc    Authenticate user & get token
 // @route   POST /api/users/login
 // @access  Public
-router.post('/login', asyncHandler(async (req, res) => {
+router.post('/login', authLimiter, asyncHandler(async (req, res) => {
     const { username, password } = req.body;
 
     const user = await User.findOne({ username });
@@ -55,7 +67,7 @@ router.post('/login', asyncHandler(async (req, res) => {
             _id: user._id,
             name: user.name,
             username: user.username,
-            token: generateToken(user._id), // Generate and send token
+            token: generateToken(user._id),
         });
     } else {
         res.status(401);
@@ -63,20 +75,42 @@ router.post('/login', asyncHandler(async (req, res) => {
     }
 }));
 
-// @desc    Get user profile (example of a protected route)
+// @desc    Get user profile
 // @route   GET /api/users/profile
-// @access  Private (requires authentication middleware)
-// This route would typically be protected by the 'protect' middleware
-// For now, it's a placeholder, but in a real app, req.user would come from JWT
-router.get('/profile', asyncHandler(async (req, res) => {
-    // Example: If this route were protected by 'protect', req.user would be available
-    // if (req.user) {
-    //     res.json({ user: req.user });
-    // } else {
-    //     res.status(401);
-    //     throw new Error('Not authorized, no user data');
-    // }
-    res.json({ message: 'User profile data (requires authentication)' });
+// @access  Private
+router.get('/profile', protect, asyncHandler(async (req, res) => {
+    if (req.user) {
+        res.json({
+            _id: req.user._id,
+            name: req.user.name,
+            username: req.user.username,
+            currencyPreference: req.user.currencyPreference,
+        });
+    } else {
+        res.status(404);
+        throw new Error('User not found');
+    }
+}));
+
+// @desc    Delete a user and their associated data
+// @route   DELETE /api/users/:id
+// @access  Private
+router.delete('/:id', protect, asyncHandler(async (req, res) => {
+    const userToDelete = await User.findById(req.params.id);
+
+    if (!userToDelete) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    if (userToDelete._id.toString() !== req.user._id.toString()) {
+        res.status(401);
+        throw new Error('Not authorized to delete this user');
+    }
+
+    await userToDelete.deleteOne();
+
+    res.json({ message: 'User and all associated data removed successfully' });
 }));
 
 module.exports = router;

@@ -1,144 +1,145 @@
-// frontend/src/components/RegisterPage.jsx
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { loginUser } from '../redux/slices/authSlice.jsx'; // Use loginUser to auto-login after register
-import { useNavigate, Link } from 'react-router-dom'; // Import Link and useNavigate
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../redux/slices/authSlice.jsx';
 
 const RegisterPage = () => {
-    const [name, setName] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [message, setMessage] = useState('');
 
-    const dispatch = useDispatch();
-    const navigate = useNavigate(); // Hook for programmatic navigation
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
 
-    const handleRegister = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-        if (password !== confirmPassword) {
-            setError('Passwords do not match.');
-            setLoading(false);
-            return;
-        }
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match.");
+      return;
+    }
 
-        try {
-            const response = await fetch('http://localhost:3001/api/users/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name, username, password }),
-            });
+    if (password.length < 6) {
+      setMessage("Password must be at least 6 characters long.");
+      return;
+    }
 
-            const data = await response.json();
+    setMessage(''); // Clear previous messages
+    dispatch(registerUser({ name, username, password }));
+  };
 
-            if (response.ok) {
-                // If registration is successful, automatically log in the user
-                dispatch(loginUser(data));
-                navigate('/dashboard'); // Redirect to dashboard
-            } else {
-                setError(data.message || 'Registration failed. Please try again.');
-            }
-        } catch (err) {
-            setError('Network error or server is not running. Please check console for details.');
-            console.error('Registration error:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-            <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md border border-gray-200">
-                <h2 className="text-4xl font-extrabold text-primary-dark text-center mb-8">
-                    BudgetEase
-                </h2>
-                <h3 className="text-2xl font-semibold text-gray-800 text-center mb-6">
-                    Create Your Account
-                </h3>
-                <form onSubmit={handleRegister} className="space-y-6">
-                    <div>
-                        <label htmlFor="name" className="block text-lg font-medium text-gray-700 mb-2">
-                            Full Name
-                        </label>
-                        <input
-                            type="text"
-                            id="name"
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary text-lg outline-none"
-                            placeholder="Enter your full name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="username" className="block text-lg font-medium text-gray-700 mb-2">
-                            Username
-                        </label>
-                        <input
-                            type="text"
-                            id="username"
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary text-lg outline-none"
-                            placeholder="Choose a username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="password" className="block text-lg font-medium text-gray-700 mb-2">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary text-lg outline-none"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="confirmPassword" className="block text-lg font-medium text-gray-700 mb-2">
-                            Confirm Password
-                        </label>
-                        <input
-                            type="password"
-                            id="confirmPassword"
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary text-lg outline-none"
-                            placeholder="Confirm your password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    {error && (
-                        <p className="text-red-500 text-center text-md font-medium">{error}</p>
-                    )}
-                    <button
-                        type="submit"
-                        className="w-full py-3 px-4 bg-primary text-white font-bold rounded-md shadow-sm transition duration-300 ease-in-out hover:bg-opacity-90 text-xl"
-                        disabled={loading}
-                    >
-                        {loading ? 'Registering...' : 'Register'}
-                    </button>
-                </form>
-                <p className="mt-6 text-center text-gray-600 text-md">
-                    Already have an account?{' '}
-                    <Link to="/login" className="text-primary hover:underline">
-                        Login here
-                    </Link>
-                </p>
-            </div>
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="w-full max-w-sm p-8 space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Create an Account
+          </h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Join the BudgetEase community.
+          </p>
         </div>
-    );
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Full Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-50 dark:bg-gray-700 dark:text-white"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Username
+            </label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-50 dark:bg-gray-700 dark:text-white"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-50 dark:bg-gray-700 dark:text-white"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="confirm-password"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Confirm Password
+            </label>
+            <input
+              id="confirm-password"
+              name="confirm-password"
+              type="password"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-50 dark:bg-gray-700 dark:text-white"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
+          <div className="min-h-[2rem]">
+            {message && (
+              <p className="text-sm font-medium text-red-500 text-center">
+                {message}
+              </p>
+            )}
+            {error && (
+              <p className="text-sm font-medium text-red-500 text-center">
+                {error}
+              </p>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"
+            disabled={loading}
+          >
+            {loading ? 'Creating Account...' : 'Sign Up'}
+          </button>
+        </form>
+        <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+          <a
+            href="/login"
+            className="font-medium text-primary-600 hover:text-primary-500"
+          >
+            Already have an account? Sign in.
+          </a>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default RegisterPage;
-

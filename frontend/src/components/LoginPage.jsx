@@ -1,107 +1,98 @@
-// frontend/src/components/LoginPage.jsx
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { loginUser } from '../redux/slices/authSlice.jsx';
-import { Link } from 'react-router-dom'; // Import Link
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '../redux/slices/authSlice';
 
-// --- Login Page Component ---
 const LoginPage = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const dispatch = useDispatch();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
 
-    // Handles the login form submission
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setError('');
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
 
-        try {
-            const response = await fetch('http://localhost:3001/api/users/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password }),
-            });
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setMessage(''); // Clear previous messages
+    dispatch(loginUser({ username, password }));
+  };
 
-            const data = await response.json();
-
-            if (response.ok) {
-                dispatch(loginUser(data));
-            } else {
-                setError(data.message || 'Login failed. Please check your credentials.');
-            }
-        } catch (err) {
-            setError('Network error or server is not running. Please check console for details.');
-            console.error('Login error:', err);
-        }
-    };
-
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-            <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md border border-gray-200">
-                <h2 className="text-4xl font-extrabold text-primary-dark text-center mb-8">
-                    BudgetEase
-                </h2>
-                <h3 className="text-2xl font-semibold text-gray-800 text-center mb-6">
-                    Login to Your Account
-                </h3>
-                <form onSubmit={handleLogin} className="space-y-6">
-                    <div>
-                        <label htmlFor="username" className="block text-lg font-medium text-gray-700 mb-2">
-                            Username / Email
-                        </label>
-                        <input
-                            type="text"
-                            id="username"
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary text-lg outline-none"
-                            placeholder="Enter your username or email"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="password" className="block text-lg font-medium text-gray-700 mb-2">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary text-lg outline-none"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    {error && (
-                        <p className="text-red-500 text-center text-md font-medium">{error}</p>
-                    )}
-                    <button
-                        type="submit"
-                        className="w-full py-3 px-4 bg-primary text-white font-bold rounded-md shadow-sm transition duration-300 ease-in-out hover:bg-opacity-90 text-xl"
-                    >
-                        Login
-                    </button>
-                </form>
-                <p className="mt-8 text-center text-gray-600 text-sm">
-                    Demo Accounts:
-                    <br />
-                    <span className="font-semibold">Hannah</span> (password: password123)
-                    <br />
-                    <span className="font-semibold">David</span> (password: password123)
-                </p>
-                <p className="mt-4 text-center text-gray-600 text-md">
-                    Don't have an account?{' '}
-                    <Link to="/register" className="text-primary hover:underline">
-                        Sign up here
-                    </Link>
-                </p>
-            </div>
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="w-full max-w-sm p-8 space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Sign In
+          </h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Access your BudgetEase account.
+          </p>
         </div>
-    );
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Username
+            </label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-50 dark:bg-gray-700 dark:text-white"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-50 dark:bg-gray-700 dark:text-white"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <div className="min-h-[2rem]">
+            {message && (
+              <p className="text-sm font-medium text-red-500 text-center">
+                {message}
+              </p>
+            )}
+            {error && (
+              <p className="text-sm font-medium text-red-500 text-center">
+                {error}
+              </p>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"
+            disabled={loading}
+          >
+            {loading ? 'Signing In...' : 'Sign In'}
+          </button>
+        </form>
+        <div className="text-center text-sm text-gray-500 dark:text-gray-400">
+          <a
+            href="/register"
+            className="font-medium text-primary-600 hover:text-primary-500"
+          >
+            Don't have an account? Sign up.
+          </a>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default LoginPage;

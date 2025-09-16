@@ -1,43 +1,116 @@
-// frontend/src/redux/slices/authSlice.jsx
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-// Load user info and token from session storage on initial load
-const userInfoFromStorage = sessionStorage.getItem('userInfo')
-    ? JSON.parse(sessionStorage.getItem('userInfo'))
-    : null;
+// This thunk will handle user registration.
+export const registerUser = createAsyncThunk(
+  'auth/registerUser',
+  async (userData, { rejectWithValue }) => {
+    try {
+      // TODO: Connect this to your backend API call.
+      // const response = await api.post('/api/register', userData);
+      // return response.data;
 
-const userTokenFromStorage = sessionStorage.getItem('userToken')
-    ? sessionStorage.getItem('userToken')
-    : null;
+      // Simulating a successful response for now.
+      console.log('Simulating user registration with data:', userData);
+      return { user: { name: userData.name, username: userData.username } };
+    } catch (error) {
+      return rejectWithValue(error.response.data.message || 'Registration failed.');
+    }
+  }
+);
+
+// This thunk will handle user login.
+export const loginUser = createAsyncThunk(
+  'auth/loginUser',
+  async (credentials, { rejectWithValue }) => {
+    try {
+      // TODO: Connect this to your backend API call.
+      // const response = await api.post('/api/login', credentials);
+      // return response.data;
+
+      // Simulating a successful response for now.
+      console.log('Simulating user login with data:', credentials);
+      return { user: { username: credentials.username } };
+    } catch (error) {
+      return rejectWithValue(error.response.data.message || 'Login failed.');
+    }
+  }
+);
+
+// This thunk will handle user logout.
+export const logoutUser = createAsyncThunk(
+  'auth/logoutUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      // TODO: Connect this to your backend API call.
+      // const response = await api.post('/api/logout');
+      // return response.data;
+
+      // Simulating a successful logout.
+      console.log('Simulating user logout.');
+      return {};
+    } catch (error) {
+      return rejectWithValue(error.response.data.message || 'Logout failed.');
+    }
+  }
+);
 
 const initialState = {
-    user: userInfoFromStorage,
-    token: userTokenFromStorage,
-    isAuthenticated: !!userInfoFromStorage, // True if user info exists
+  user: null,
+  loading: false,
+  error: null,
 };
 
 const authSlice = createSlice({
-    name: 'auth',
-    initialState,
-    reducers: {
-        loginUser: (state, action) => {
-            // action.payload should contain { _id, name, username, token }
-            state.user = action.payload;
-            state.token = action.payload.token;
-            state.isAuthenticated = true;
-            sessionStorage.setItem('userInfo', JSON.stringify(action.payload)); // Store full user object
-            sessionStorage.setItem('userToken', action.payload.token); // Store token separately for convenience
-        },
-        logoutUser: (state) => {
-            state.user = null;
-            state.token = null;
-            state.isAuthenticated = false;
-            sessionStorage.removeItem('userInfo');
-            sessionStorage.removeItem('userToken');
-        },
-    },
+  name: 'auth',
+  initialState,
+  reducers: {
+    // We can add non-async reducers here if needed
+  },
+  extraReducers: (builder) => {
+    builder
+      // registerUser cases
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.error = null;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Registration failed.';
+      })
+      // loginUser cases
+      .addCase(loginUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.error = null;
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Login failed.';
+      })
+      // logoutUser cases
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.user = null;
+        state.error = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Logout failed.';
+      });
+  },
 });
 
-export const { loginUser, logoutUser } = authSlice.actions;
 export default authSlice.reducer;
 
