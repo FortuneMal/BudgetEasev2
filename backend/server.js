@@ -6,9 +6,7 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = 5000;
-// Using the local MongoDB connection string
 const mongoURI = 'mongodb://localhost:27017/';
-// Make sure to replace this with a strong, secure key in production
 const jwtSecret = 'YOUR_SUPER_SECRET_JWT_KEY';
 
 // Middleware
@@ -32,6 +30,7 @@ const expenseSchema = new mongoose.Schema({
   name: { type: String, required: true },
   amount: { type: Number, required: true },
   category: { type: String, required: true },
+  isRecurring: { type: Boolean, default: false },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 });
 const Expense = mongoose.model('Expense', expenseSchema);
@@ -96,20 +95,53 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// CRUD routes for expenses
+// GET all expenses with filtering, sorting, and searching
 app.get('/api/expenses', auth, async (req, res) => {
   try {
-    const expenses = await Expense.find({ user: req.user.id });
+    const { category, sort, search } = req.query;
+    const filter = { user: req.user.id };
+    const sortOptions = {};
+
+    // Filter by category
+    if (category && category !== 'All') {
+      filter.category = category;
+    }
+
+    // Search by name
+    if (search) {
+      filter.name = { $regex: search, $options: 'i' };
+    }
+
+    // Sorting
+    if (sort) {
+      switch (sort) {
+        case 'amount_asc':
+          sortOptions.amount = 1;
+          break;
+        case 'amount_desc':
+          sortOptions.amount = -1;
+          break;
+        case 'date_asc':
+          sortOptions.date = 1;
+          break;
+        case 'date_desc':
+          sortOptions.date = -1;
+          break;
+      }
+    }
+
+    const expenses = await Expense.find(filter).sort(sortOptions);
     res.json(expenses);
   } catch (e) {
     res.status(500).send('Server error');
   }
 });
 
+// POST a new expense
 app.post('/api/expenses', auth, async (req, res) => {
-  const { name, amount, category } = req.body;
+  const { name, amount, category, isRecurring } = req.body;
   try {
-    const newExpense = new Expense({ name, amount, category, user: req.user.id });
+    const newExpense = new Expense({ name, amount, category, isRecurring, user: req.user.id });
     const expense = await newExpense.save();
     res.json(expense);
   } catch (e) {
@@ -117,6 +149,7 @@ app.post('/api/expenses', auth, async (req, res) => {
   }
 });
 
+// PUT (update) an expense
 app.put('/api/expenses/:id', auth, async (req, res) => {
   const { name, amount, category } = req.body;
   try {
@@ -137,6 +170,7 @@ app.put('/api/expenses/:id', auth, async (req, res) => {
   }
 });
 
+// DELETE an expense
 app.delete('/api/expenses/:id', auth, async (req, res) => {
   try {
     let expense = await Expense.findById(req.params.id);
@@ -154,4 +188,3 @@ app.delete('/api/expenses/:id', auth, async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
