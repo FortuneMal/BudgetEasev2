@@ -1,4 +1,3 @@
-BudgetEase
 BudgetEase is a full-stack personal finance management application designed to help users track expenses, set budgets, and manage savings goals. It provides a clear overview of financial activity, enabling users to make informed decisions about their spending and savings habits.
 
 ✨ Features
