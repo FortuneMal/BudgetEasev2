@@ -702,6 +702,103 @@ const MetricCards = ({ totalIncome, totalExpenses, netSavings, selectedCurrency,
   );
 };
 
+const SavingTipsAI = ({ totalIncome, totalExpenses, goals, categoryBudgets }) => {
+  const [tips, setTips] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchTips = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+      if (!apiKey) {
+        throw new Error('Groq API Key is not configured. Please add VITE_GROQ_API_KEY to your .env file inside frontend directory, then restart your dev server.');
+      }
+
+      const prompt = `You are a strict, concise, and helpful financial advisor. Here is my current financial profile:
+- Total Income: ${totalIncome}
+- Total Expenses: ${totalExpenses}
+- Net Cash Flow: ${totalIncome - totalExpenses}
+- Active Goals: ${goals.length > 0 ? goals.map(g => g.name).join(', ') : 'None'}
+- Category Budgets Setup: ${Object.keys(categoryBudgets).length > 0 ? Object.keys(categoryBudgets).join(', ') : 'None'}
+
+Please give me 3 specific, actionable saving tips tailored exactly to this profile. Limit your response to 3 short bullet points. Do not include introductory text, just the bullet points.`;
+
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'llama3-8b-8192',
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Groq API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setTips(data.choices[0].message.content);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-200 dark:border-gray-700">
+      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+        Personal AI Saving Tips
+      </h3>
+      <p className="text-gray-600 dark:text-gray-400 mb-6 font-medium">
+        Get personalized recommendations on how to allocate your budget and boost your savings, powered instantly by Groq.
+      </p>
+      
+      {!tips && !loading && !error && (
+        <button
+          onClick={fetchTips}
+          className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg transition duration-300 shadow-md"
+        >
+          Generate My Personalized Tips
+        </button>
+      )}
+
+      {loading && (
+        <div className="flex items-center gap-3 text-indigo-500 font-medium tracking-wide">
+          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Analyzing profile...
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 p-4 rounded-lg font-medium border border-red-200 dark:border-red-800">
+          {error}
+        </div>
+      )}
+
+      {tips && (
+        <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 p-6 rounded-xl border border-gray-100 dark:border-gray-600 leading-relaxed">
+          {tips}
+          <div className="mt-6 flex justify-end">
+            <button onClick={fetchTips} className="text-sm text-indigo-500 hover:text-indigo-400 font-semibold uppercase tracking-wide">
+              Refresh Tips
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Dashboard Component
 const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency, theme, toggleTheme }) => {
   const [expenses, setExpenses] = useState([]);
@@ -711,6 +808,7 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency, them
   const [filterCategory, setFilterCategory] = useState('All');
   const [sortBy, setSortBy] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('expenses'); // New Tab State
 
   // --- NEW STATE for Financial Tracking ---
   const [income, setIncome] = useState([]);
@@ -926,92 +1024,138 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency, them
             selectedCurrency={selectedCurrency}
           />
 
-          {/* --- NEW SECTION: Category Budgets Progress --- */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Budget Progress by Category</h3>
-            <div className="space-y-4">
-              {categories.map(cat => {
-                const totalSpent = expenses.filter(exp => exp.category === cat).reduce((sum, exp) => sum + exp.amount, 0);
-                const budgetAmount = categoryBudgets[cat] || 0;
-                const progressPercentage = budgetAmount > 0 ? (totalSpent / budgetAmount) * 100 : 0;
-                const progressColor = progressPercentage > 100 ? 'bg-red-500' : 'bg-blue-500';
-
-                return (
-                  <div key={cat}>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-medium text-gray-700 dark:text-gray-300">{cat}</span>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {formatCurrency(totalSpent, selectedCurrency)} / {formatCurrency(budgetAmount, selectedCurrency)}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-600">
-                      <div
-                        className={`${progressColor} h-2.5 rounded-full transition-all duration-500`}
-                        style={{ width: `${Math.min(100, progressPercentage)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <BudgetForm categories={categories} categoryBudgets={categoryBudgets} onSetBudget={handleSetBudget} selectedCurrency={selectedCurrency} />
-          <IncomeForm onAddIncome={handleAddIncome} />
-          <ExpenseForm
-            onAddExpense={handleAddExpense}
-            onUpdateExpense={handleUpdateExpense}
-            editingExpense={editingExpense}
-            onCancelEdit={handleCancelEdit}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-            <SpendingChart expenses={expenses} selectedCurrency={selectedCurrency} />
-            <FinancialGoals goals={goals} onAddGoal={handleAddGoal} onRemoveGoal={handleRemoveGoal} totalSavings={netSavings} selectedCurrency={selectedCurrency} />
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mt-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <input
-                type="text"
-                placeholder="Search expenses..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
-              />
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
+          {/* --- TABS NAVIGATION --- */}
+          <div className="flex space-x-2 md:space-x-8 border-b-2 border-gray-100 dark:border-gray-700 mb-8 overflow-x-auto">
+            {['expenses', 'income', 'goals', 'tips'].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`pb-3 px-2 text-sm md:text-base font-semibold uppercase tracking-wider transition-colors whitespace-nowrap
+                  ${activeTab === tab 
+                    ? 'border-b-4 border-blue-500 text-blue-500 dark:text-blue-400' 
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
               >
-                <option value="All">All Categories</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-              <div className="w-full md:w-1/3 flex justify-end gap-2">
-                <button
-                  onClick={() => setSortBy('amount_desc')}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'amount_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                >
-                  Sort by Amount
-                </button>
-                <button
-                  onClick={() => setSortBy('date_desc')}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'date_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                >
-                  Sort by Date
-                </button>
-              </div>
-            </div>
+                {tab === 'tips' ? 'Saving Tips ✨' : tab}
+              </button>
+            ))}
           </div>
 
-          <ExpenseList
-            expenses={expenses}
-            onEdit={handleEditExpense}
-            onDelete={handleDeleteExpense}
-            selectedCurrency={selectedCurrency}
-          />
+          {/* --- EXPENSES TAB VIEW --- */}
+          {activeTab === 'expenses' && (
+            <div className="animate-fadeIn">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6 border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Budget Progress by Category</h3>
+                <div className="space-y-4">
+                  {categories.map(cat => {
+                    const totalSpent = expenses.filter(exp => exp.category === cat).reduce((sum, exp) => sum + exp.amount, 0);
+                    const budgetAmount = categoryBudgets[cat] || 0;
+                    const progressPercentage = budgetAmount > 0 ? (totalSpent / budgetAmount) * 100 : 0;
+                    const progressColor = progressPercentage > 100 ? 'bg-red-500' : 'bg-blue-500';
+
+                    return (
+                      <div key={cat}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-medium text-gray-700 dark:text-gray-300">{cat}</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {formatCurrency(totalSpent, selectedCurrency)} / {formatCurrency(budgetAmount, selectedCurrency)}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-600">
+                          <div
+                            className={`${progressColor} h-2.5 rounded-full transition-all duration-500`}
+                            style={{ width: `${Math.min(100, progressPercentage)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <BudgetForm categories={categories} categoryBudgets={categoryBudgets} onSetBudget={handleSetBudget} selectedCurrency={selectedCurrency} />
+              
+              <ExpenseForm
+                onAddExpense={handleAddExpense}
+                onUpdateExpense={handleUpdateExpense}
+                editingExpense={editingExpense}
+                onCancelEdit={handleCancelEdit}
+              />
+
+              <div className="mt-8">
+                <SpendingChart expenses={expenses} selectedCurrency={selectedCurrency} />
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-200 dark:border-gray-700">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <input
+                    type="text"
+                    placeholder="Search expenses..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
+                  />
+                  <select
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
+                  >
+                    <option value="All">All Categories</option>
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <div className="w-full md:w-1/3 flex justify-end gap-2">
+                    <button
+                      onClick={() => setSortBy('amount_desc')}
+                      className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'amount_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
+                    >
+                      Sort by Amount
+                    </button>
+                    <button
+                      onClick={() => setSortBy('date_desc')}
+                      className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'date_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
+                    >
+                      Sort by Date
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <ExpenseList
+                expenses={expenses}
+                onEdit={handleEditExpense}
+                onDelete={handleDeleteExpense}
+                selectedCurrency={selectedCurrency}
+              />
+            </div>
+          )}
+
+          {/* --- INCOME TAB VIEW --- */}
+          {activeTab === 'income' && (
+            <div className="animate-fadeIn">
+              <IncomeForm onAddIncome={handleAddIncome} />
+            </div>
+          )}
+
+          {/* --- GOALS TAB VIEW --- */}
+          {activeTab === 'goals' && (
+            <div className="animate-fadeIn">
+              <FinancialGoals goals={goals} onAddGoal={handleAddGoal} onRemoveGoal={handleRemoveGoal} totalSavings={netSavings} selectedCurrency={selectedCurrency} />
+            </div>
+          )}
+
+          {/* --- SAVING TIPS TAB VIEW --- */}
+          {activeTab === 'tips' && (
+            <div className="animate-fadeIn">
+              <SavingTipsAI 
+                totalIncome={totalIncome}
+                totalExpenses={totalExpenses}
+                goals={goals}
+                categoryBudgets={categoryBudgets}
+              />
+            </div>
+          )}
+
         </div>
       </div>
     </div>
