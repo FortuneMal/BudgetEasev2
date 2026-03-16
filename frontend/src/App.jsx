@@ -37,7 +37,7 @@ const LogoHeader = () => {
 };
 
 // Login Page Component
-const LoginPage = ({ onAuthSuccess, onNavigate }) => {
+const LoginPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -45,7 +45,7 @@ const LoginPage = ({ onAuthSuccess, onNavigate }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     const { data, error: sbError } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -60,10 +60,21 @@ const LoginPage = ({ onAuthSuccess, onNavigate }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
-      <div className="w-full max-w-sm">
+    <div className={`flex flex-col items-center justify-center min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} p-4`}>
+      <div className="w-full max-w-sm relative">
+        <button
+          onClick={toggleTheme}
+          className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors shadow-sm cursor-pointer z-10"
+          title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+        >
+          {theme === 'light' ? (
+            <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+          ) : (
+            <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          )}
+        </button>
         <LogoHeader />
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 mt-4">
           <h2 className="text-xl font-semibold text-center mb-6 text-gray-900 dark:text-gray-100">
             Login to Your Account
           </h2>
@@ -123,7 +134,7 @@ const LoginPage = ({ onAuthSuccess, onNavigate }) => {
 };
 
 // Registration Page Component
-const RegisterPage = ({ onAuthSuccess, onNavigate }) => {
+const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -131,7 +142,7 @@ const RegisterPage = ({ onAuthSuccess, onNavigate }) => {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     const { data, error: sbError } = await supabase.auth.signUp({
       email,
       password,
@@ -148,10 +159,21 @@ const RegisterPage = ({ onAuthSuccess, onNavigate }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
-      <div className="w-full max-w-sm">
+    <div className={`flex flex-col items-center justify-center min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} p-4`}>
+      <div className="w-full max-w-sm relative">
+        <button
+          onClick={toggleTheme}
+          className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors shadow-sm cursor-pointer z-10"
+          title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+        >
+          {theme === 'light' ? (
+            <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+          ) : (
+            <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          )}
+        </button>
         <LogoHeader />
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 mt-4">
           <h2 className="text-xl font-semibold text-center mb-6 text-gray-900 dark:text-gray-100">
             Create an Account
           </h2>
@@ -549,7 +571,7 @@ const FinancialGoals = ({ goals, onAddGoal, onRemoveGoal, totalSavings, selected
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
       <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Financial Goals</h3>
-      
+
       {/* Goal Form */}
       <form onSubmit={handleSubmit} className="mb-6 flex flex-col md:flex-row gap-4 items-end">
         <div className="flex-1 w-full">
@@ -618,9 +640,70 @@ const FinancialGoals = ({ goals, onAddGoal, onRemoveGoal, totalSavings, selected
     </div>
   );
 };
+const MetricCards = ({ totalIncome, totalExpenses, netSavings, selectedCurrency, theme }) => {
+  return (
+    // The main grid container: 1 column on mobile, 4 columns on medium+ screens
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 w-full max-w-6xl mx-auto">
+      
+      {/* 1. Total Income Card */}
+      <div className={`${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-6 border shadow-lg hover:shadow-xl transition-shadow duration-300`}>
+        <div className="flex justify-between items-start mb-4">
+          <h3 className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm font-medium tracking-wide uppercase`}>Total Income</h3>
+          {/* Subtle Icon Container */}
+          <div className="p-2 bg-emerald-500/10 rounded-lg">
+            <svg className="w-5 h-5 text-emerald-500 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+        </div>
+        <p className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>{formatCurrency(totalIncome, selectedCurrency)}</p>
+      </div>
+
+      {/* 2. Total Expenses Card */}
+      <div className={`${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-6 border shadow-lg hover:shadow-xl transition-shadow duration-300`}>
+        <div className="flex justify-between items-start mb-4">
+          <h3 className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm font-medium tracking-wide uppercase`}>Total Expenses</h3>
+          <div className="p-2 bg-rose-500/10 rounded-lg">
+            <svg className="w-5 h-5 text-rose-500 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+            </svg>
+          </div>
+        </div>
+        <p className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>{formatCurrency(totalExpenses, selectedCurrency)}</p>
+      </div>
+
+      {/* 3. Net Cash Flow Card */}
+      <div className={`${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-6 border shadow-lg hover:shadow-xl transition-shadow duration-300`}>
+        <div className="flex justify-between items-start mb-4">
+          <h3 className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm font-medium tracking-wide uppercase`}>Net Cash Flow</h3>
+          <div className="p-2 bg-blue-500/10 rounded-lg">
+            <svg className="w-5 h-5 text-blue-500 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+        <p className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>{formatCurrency(netSavings, selectedCurrency)}</p>
+      </div>
+
+      {/* 4. Remaining Budget Card */}
+      <div className={`${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-6 border shadow-lg hover:shadow-xl transition-shadow duration-300`}>
+        <div className="flex justify-between items-start mb-4">
+          <h3 className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm font-medium tracking-wide uppercase`}>Remaining Budget</h3>
+          <div className="p-2 bg-purple-500/10 rounded-lg">
+            <svg className="w-5 h-5 text-purple-500 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+          </div>
+        </div>
+        <p className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>N/A</p>
+      </div>
+
+    </div>
+  );
+};
 
 // Dashboard Component
-const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) => {
+const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency, theme, toggleTheme }) => {
   const [expenses, setExpenses] = useState([]);
   const [editingExpense, setEditingExpense] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -628,12 +711,11 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
   const [filterCategory, setFilterCategory] = useState('All');
   const [sortBy, setSortBy] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // --- NEW STATE for Financial Tracking ---
   const [income, setIncome] = useState([]);
   const [categoryBudgets, setCategoryBudgets] = useState(JSON.parse(localStorage.getItem('categoryBudgets')) || {});
   const [goals, setGoals] = useState(JSON.parse(localStorage.getItem('goals')) || []);
-  const [theme, setTheme] = useState('light'); // New state for theme
   const categories = ['Groceries', 'Utilities', 'Entertainment', 'Transportation', 'Other'];
 
   const token = localStorage.getItem('token');
@@ -646,7 +728,7 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
       if (filterCategory !== 'All') {
         query = query.eq('category', filterCategory);
       }
-      
+
       let orderColumn = 'created_at';
       let ascending = false;
       if (sortBy === 'amount_desc') {
@@ -660,11 +742,11 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
       if (sbError) {
         throw new Error(sbError.message);
       }
-      
+
       let filteredData = data;
       if (searchQuery) {
-        filteredData = data.filter(e => 
-          e.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        filteredData = data.filter(e =>
+          e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           e.category.toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
@@ -760,7 +842,7 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
     setCategoryBudgets(newBudgets);
     localStorage.setItem('categoryBudgets', JSON.stringify(newBudgets));
   };
-  
+
   const handleAddIncome = (newIncome) => {
     const newIncomeList = [...income, newIncome];
     setIncome(newIncomeList);
@@ -788,7 +870,7 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
 
   return (
     <div className={`flex flex-col items-center min-h-screen ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-900'} p-4`}>
-      <div className="w-full max-w-4xl">
+      <div className="w-full max-w-5xl">
         <LogoHeader />
         <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row items-center justify-between mb-6 space-y-4 sm:space-y-0">
@@ -803,7 +885,7 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
                 id="currency-select"
                 value={selectedCurrency}
                 onChange={(e) => setSelectedCurrency(e.target.value)}
-                className="px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                className="px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {CURRENCIES.map(code => (
                   <option key={code} value={code}>
@@ -811,9 +893,22 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
                   </option>
                 ))}
               </select>
+
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors shadow-sm cursor-pointer"
+                title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              >
+                {theme === 'light' ? (
+                  <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                ) : (
+                  <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                )}
+              </button>
+
               <button
                 onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-sm cursor-pointer"
               >
                 Logout
               </button>
@@ -822,26 +917,14 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
           <p className="text-gray-700 dark:text-gray-300 mb-4">
             This is where you'll manage your budget, track expenses, and view your financial insights.
           </p>
-          
+
           {/* --- UPDATED FINANCIAL OVERVIEW --- */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="bg-green-100 dark:bg-green-900 p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-bold text-green-800 dark:text-green-200 mb-2">Total Income</h3>
-              <p className="text-2xl font-extrabold text-green-900 dark:text-green-100">{formatCurrency(totalIncome, selectedCurrency)}</p>
-            </div>
-            <div className="bg-red-100 dark:bg-red-900 p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-bold text-red-800 dark:text-red-200 mb-2">Total Expenses</h3>
-              <p className="text-2xl font-extrabold text-red-900 dark:text-red-100">{formatCurrency(totalExpenses, selectedCurrency)}</p>
-            </div>
-            <div className="bg-blue-100 dark:bg-blue-900 p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-bold text-blue-800 dark:text-blue-200 mb-2">Net Cash Flow</h3>
-              <p className="text-2xl font-extrabold text-blue-900 dark:text-blue-100">{formatCurrency(netSavings, selectedCurrency)}</p>
-            </div>
-             <div className="bg-purple-100 dark:bg-purple-900 p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-bold text-purple-800 dark:text-purple-200 mb-2">Remaining Budget</h3>
-              <p className="text-2xl font-extrabold text-purple-900 dark:text-purple-100">N/A</p>
-            </div>
-          </div>
+          <MetricCards
+            totalIncome={totalIncome}
+            totalExpenses={totalExpenses}
+            netSavings={netSavings}
+            selectedCurrency={selectedCurrency}
+          />
 
           {/* --- NEW SECTION: Category Budgets Progress --- */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
@@ -872,16 +955,16 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
               })}
             </div>
           </div>
-          
+
           <BudgetForm categories={categories} categoryBudgets={categoryBudgets} onSetBudget={handleSetBudget} selectedCurrency={selectedCurrency} />
           <IncomeForm onAddIncome={handleAddIncome} />
-          <ExpenseForm 
-            onAddExpense={handleAddExpense} 
+          <ExpenseForm
+            onAddExpense={handleAddExpense}
             onUpdateExpense={handleUpdateExpense}
             editingExpense={editingExpense}
             onCancelEdit={handleCancelEdit}
           />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
             <SpendingChart expenses={expenses} selectedCurrency={selectedCurrency} />
             <FinancialGoals goals={goals} onAddGoal={handleAddGoal} onRemoveGoal={handleRemoveGoal} totalSavings={netSavings} selectedCurrency={selectedCurrency} />
@@ -923,10 +1006,10 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
             </div>
           </div>
 
-          <ExpenseList 
-            expenses={expenses} 
-            onEdit={handleEditExpense} 
-            onDelete={handleDeleteExpense} 
+          <ExpenseList
+            expenses={expenses}
+            onEdit={handleEditExpense}
+            onDelete={handleDeleteExpense}
             selectedCurrency={selectedCurrency}
           />
         </div>
@@ -940,6 +1023,25 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
   const [currentPage, setCurrentPage] = useState(isAuthenticated ? 'dashboard' : 'login');
   const [selectedCurrency, setSelectedCurrency] = useState(getDefaultCurrency());
+  
+  // Lift Theme State
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'light';
+  });
+
+  useEffect(() => {
+    // Apply Tailwind dark mode class to HTML element
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
 
   const navigateTo = (pageName) => {
     setCurrentPage(pageName);
@@ -952,20 +1054,28 @@ const App = () => {
 
   const renderPage = () => {
     if (isAuthenticated) {
-      return <DashboardPage onNavigate={navigateTo} selectedCurrency={selectedCurrency} setSelectedCurrency={setSelectedCurrency} />;
+      return (
+        <DashboardPage 
+          onNavigate={navigateTo} 
+          selectedCurrency={selectedCurrency} 
+          setSelectedCurrency={setSelectedCurrency} 
+          theme={theme}
+          toggleTheme={toggleTheme}
+        />
+      );
     }
     switch (currentPage) {
       case 'login':
-        return <LoginPage onAuthSuccess={handleAuthSuccess} onNavigate={navigateTo} />;
+        return <LoginPage onAuthSuccess={handleAuthSuccess} onNavigate={navigateTo} theme={theme} toggleTheme={toggleTheme} />;
       case 'register':
-        return <RegisterPage onAuthSuccess={handleAuthSuccess} onNavigate={navigateTo} />;
+        return <RegisterPage onAuthSuccess={handleAuthSuccess} onNavigate={navigateTo} theme={theme} toggleTheme={toggleTheme} />;
       default:
-        return <LoginPage onAuthSuccess={handleAuthSuccess} onNavigate={navigateTo} />;
+        return <LoginPage onAuthSuccess={handleAuthSuccess} onNavigate={navigateTo} theme={theme} toggleTheme={toggleTheme} />;
     }
   };
 
   return (
-    <div className="font-sans antialiased text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div className={`font-sans antialiased min-h-screen transition-colors duration-300 ${theme === 'light' ? 'bg-gray-100 text-gray-900' : 'bg-gray-900 text-gray-100'}`}>
       {renderPage()}
     </div>
   );
