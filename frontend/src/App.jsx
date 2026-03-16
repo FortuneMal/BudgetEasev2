@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './utils/supabase';
+import { 
+  TrendingUp, TrendingDown, Wallet, Activity, LogOut, ShoppingCart, Zap, Film, Home, Coffee
+} from 'lucide-react';
 
 // Function to get the default currency code.
 const getDefaultCurrency = () => {
@@ -808,7 +811,7 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency, them
   const [filterCategory, setFilterCategory] = useState('All');
   const [sortBy, setSortBy] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('expenses'); // New Tab State
+  const [activeTab, setActiveTab] = useState('dashboard'); // New Tab State
 
   // --- NEW STATE for Financial Tracking ---
   const [income, setIncome] = useState([]);
@@ -967,197 +970,340 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency, them
   if (error) return <div className="text-center text-lg text-red-500 mt-8">Error: {error}</div>;
 
   return (
-    <div className={`flex flex-col items-center min-h-screen ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-900'} p-4`}>
-      <div className="w-full max-w-5xl">
-        <LogoHeader />
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col sm:flex-row items-center justify-between mb-6 space-y-4 sm:space-y-0">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-              Welcome to your Dashboard
-            </h2>
-            <div className="flex items-center space-x-4">
-              <label htmlFor="currency-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Currency:
-              </label>
-              <select
-                id="currency-select"
-                value={selectedCurrency}
+    <div className={`min-h-screen font-sans selection:bg-emerald-500/30 ${theme === 'dark' ? 'bg-slate-950 text-slate-200' : 'bg-gray-50 text-gray-900'}`}>
+      
+      {/* TOP NAVIGATION */}
+      <nav className={`${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'} border-b sticky top-0 z-10 shadow-sm`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-emerald-500 text-white font-bold p-1.5 rounded-lg text-sm tracking-wider">
+              BE
+            </div>
+            <span className={`text-xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>BudgetEase</span>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-full transition-colors shadow-sm cursor-pointer ${
+                theme === 'dark' ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              }`}
+              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            >
+              {theme === 'light' ? (
+                <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+              ) : (
+                <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              )}
+            </button>
+
+            <div className={`flex items-center gap-2 rounded-lg p-1 border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-300'}`}>
+              <span className={`text-xs pl-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Currency:</span>
+              <select 
+                value={selectedCurrency} 
                 onChange={(e) => setSelectedCurrency(e.target.value)}
-                className="px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`bg-transparent text-sm font-medium focus:outline-none pr-2 pb-0.5 cursor-pointer appearance-none ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
               >
                 {CURRENCIES.map(code => (
-                  <option key={code} value={code}>
-                    {code}
-                  </option>
+                  <option key={code} value={code} className="text-gray-900">{code}</option>
                 ))}
               </select>
+            </div>
+            
+            <button
+               onClick={handleLogout}
+               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-transparent ${
+                 theme === 'dark'
+                 ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/20'
+                 : 'text-gray-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200'
+               }`}
+             >
+              <LogOut size={16} />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+          </div>
+        </div>
+      </nav>
 
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors shadow-sm cursor-pointer"
-                title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-              >
-                {theme === 'light' ? (
-                  <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                ) : (
-                  <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+      {/* MAIN CONTENT */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* HEADER SECTION */}
+        <div className="mb-8 flex justify-between items-end">
+          <div>
+            <h1 className={`text-2xl sm:text-3xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Welcome to your Dashboard</h1>
+            <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Here is what's happening with your money today.</p>
+          </div>
+        </div>
+
+        {/* METRICS GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+          
+          <div className={`${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'} rounded-2xl p-6 border shadow-lg relative overflow-hidden group`}>
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-emerald-500">
+              <TrendingUp size={80} />
+            </div>
+            <div className="flex justify-between items-start mb-4 relative z-10">
+              <h3 className={`${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'} text-sm font-medium uppercase tracking-wider`}>Total Income</h3>
+              <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">
+                <TrendingUp size={20} />
+              </div>
+            </div>
+            <p className={`text-3xl font-bold relative z-10 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatCurrency(totalIncome, selectedCurrency)}</p>
+          </div>
+
+          <div className={`${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'} rounded-2xl p-6 border shadow-lg relative overflow-hidden group`}>
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-rose-500">
+              <TrendingDown size={80} />
+            </div>
+            <div className="flex justify-between items-start mb-4 relative z-10">
+              <h3 className={`${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'} text-sm font-medium uppercase tracking-wider`}>Total Expenses</h3>
+              <div className="p-2 bg-rose-500/10 rounded-lg text-rose-500">
+                <TrendingDown size={20} />
+              </div>
+            </div>
+            <p className={`text-3xl font-bold relative z-10 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatCurrency(totalExpenses, selectedCurrency)}</p>
+          </div>
+
+          <div className={`${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'} rounded-2xl p-6 border shadow-lg relative overflow-hidden group`}>
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-blue-500">
+              <Activity size={80} />
+            </div>
+            <div className="flex justify-between items-start mb-4 relative z-10">
+              <h3 className={`${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'} text-sm font-medium uppercase tracking-wider`}>Net Cash Flow</h3>
+              <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+                <Activity size={20} />
+              </div>
+            </div>
+            <p className={`text-3xl font-bold relative z-10 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatCurrency(netSavings, selectedCurrency)}</p>
+          </div>
+
+          <div className={`${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'} rounded-2xl p-6 border shadow-lg relative overflow-hidden group`}>
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-purple-500">
+              <Wallet size={80} />
+            </div>
+            <div className="flex justify-between items-start mb-4 relative z-10">
+              <h3 className={`${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'} text-sm font-medium uppercase tracking-wider`}>Remaining Budget</h3>
+              <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500">
+                <Wallet size={20} />
+              </div>
+            </div>
+            <p className={`text-3xl font-bold relative z-10 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatCurrency(netSavings, selectedCurrency)}</p>
+          </div>
+
+        </div>
+
+        {/* --- TABS NAVIGATION --- */}
+        <div className={`flex space-x-2 md:space-x-8 border-b-2 mb-8 overflow-x-auto ${theme === 'dark' ? 'border-slate-800' : 'border-gray-200'}`}>
+          {['dashboard', 'expenses', 'income', 'goals', 'tips'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-3 px-2 text-sm md:text-base font-semibold uppercase tracking-wider transition-colors whitespace-nowrap
+                ${activeTab === tab 
+                  ? 'border-b-4 border-emerald-500 text-emerald-500' 
+                  : `border-transparent ${theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-700'}`}`}
+            >
+              {tab === 'tips' ? 'Saving Tips ✨' : tab === 'dashboard' ? 'Overview' : tab}
+            </button>
+          ))}
+        </div>
+
+        {/* --- TAB VIEWS --- */}
+
+        {/* DASHBOARD OVERVIEW TAB (THE NEW UI) */}
+        {activeTab === 'dashboard' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 animate-fadeIn">
+            
+            {/* BUDGET PROGRESS */}
+            <div className={`lg:col-span-2 rounded-2xl p-6 sm:p-8 border shadow-lg ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
+               <div className="flex justify-between items-center mb-6">
+                <h2 className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Budget Progress</h2>
+                <button onClick={() => setActiveTab('expenses')} className="text-sm font-medium text-emerald-500 hover:text-emerald-400">Manage Budgets &rarr;</button>
+              </div>
+              
+              <div className="space-y-6">
+                {categories.map((catString) => {
+                  const totalSpent = expenses.filter(exp => exp.category === catString).reduce((sum, exp) => sum + exp.amount, 0);
+                  const limit = categoryBudgets[catString] || 0;
+                  
+                  // fallback to not showing unbudgeted empty categories
+                  if (limit === 0 && totalSpent === 0) return null;
+
+                  const percentage = limit > 0 ? Math.min((totalSpent / limit) * 100, 100) : (totalSpent > 0 ? 100 : 0);
+                  const isOverBudget = limit > 0 && totalSpent > limit;
+                  
+                  let Icon = Activity;
+                  let colorClass = 'bg-slate-500';
+                  if (catString === 'Home' || catString === 'Housing & Rent') { Icon = Home; colorClass = 'bg-indigo-500'; }
+                  else if (catString === 'Groceries') { Icon = ShoppingCart; colorClass = 'bg-emerald-500'; }
+                  else if (catString === 'Utilities') { Icon = Zap; colorClass = 'bg-amber-500'; }
+                  else if (catString === 'Entertainment') { Icon = Film; colorClass = 'bg-rose-500'; }
+                  else if (catString === 'Transportation') { Icon = Coffee; colorClass = 'bg-blue-500'; }
+
+                  return (
+                    <div key={catString} className="w-full group">
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-gray-100 border-gray-200 text-gray-600'}`}>
+                            <Icon size={16} />
+                          </div>
+                          <span className={`font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>{catString}</span>
+                        </div>
+                        <div className="text-right flex flex-col items-end">
+                          <div className="flex items-baseline gap-1">
+                            <span className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatCurrency(totalSpent, selectedCurrency)}</span>
+                            {limit > 0 && <span className={`text-sm hidden sm:inline ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>/ {formatCurrency(limit, selectedCurrency)}</span>}
+                          </div>
+                          {isOverBudget && (
+                            <span className="text-xs text-rose-500 font-medium mt-0.5">
+                              Over budget by {formatCurrency(totalSpent - limit, selectedCurrency)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className={`w-full rounded-full h-2.5 overflow-hidden border ${theme === 'dark' ? 'bg-slate-800 border-slate-700/50' : 'bg-gray-200 border-gray-300'}`}>
+                        <div 
+                          className={`h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden ${isOverBudget ? 'bg-rose-500' : colorClass}`}
+                          style={{ width: `${limit > 0 ? percentage : (totalSpent > 0 ? 100 : 0)}%` }}
+                        >
+                          <div className="absolute top-0 left-0 right-0 bottom-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* RECENT TRANSACTIONS */}
+            <div className={`rounded-2xl p-6 sm:p-8 border shadow-lg flex flex-col ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Recent Activity</h2>
+              </div>
+              
+              <div className="space-y-4 flex-1">
+                {expenses.slice(0, 5).map((exp) => {
+                  let Icon = Activity;
+                  let colorClass = 'text-slate-500';
+                  let bgClass = 'bg-slate-500/10';
+                  
+                  if (exp.category === 'Home' || exp.category === 'Housing & Rent') { Icon = Home; colorClass = 'text-indigo-500'; bgClass = 'bg-indigo-500/10'; }
+                  else if (exp.category === 'Groceries') { Icon = ShoppingCart; colorClass = 'text-emerald-500'; bgClass = 'bg-emerald-500/10'; }
+                  else if (exp.category === 'Utilities') { Icon = Zap; colorClass = 'text-amber-500'; bgClass = 'bg-amber-500/10'; }
+                  else if (exp.category === 'Entertainment') { Icon = Film; colorClass = 'text-rose-500'; bgClass = 'bg-rose-500/10'; }
+                  else if (exp.category === 'Transportation') { Icon = Coffee; colorClass = 'text-blue-500'; bgClass = 'bg-blue-500/10'; }
+
+                  return (
+                    <div key={exp.id || exp._id} className={`flex items-center justify-between p-3 rounded-xl transition-colors -mx-3 border border-transparent cursor-pointer ${theme === 'dark' ? 'hover:bg-slate-800/50 hover:border-slate-800' : 'hover:bg-gray-50 hover:border-gray-100'}`}>
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className={`p-2.5 rounded-xl ${bgClass} ${colorClass}`}>
+                          <Icon size={18} />
+                        </div>
+                        <div>
+                          <p className={`font-medium text-sm sm:text-base ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>{exp.name}</p>
+                          <p className={`text-xs ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>
+                            {exp.category} • {new Date(exp.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </p>
+                        </div>
+                      </div>
+                      <span className={`font-bold text-sm sm:text-base ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                        -{formatCurrency(exp.amount, selectedCurrency)}
+                      </span>
+                    </div>
+                  )
+                })}
+                {expenses.length === 0 && (
+                  <p className={`text-sm text-center italic mt-auto mb-auto ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>No recent expenses.</p>
                 )}
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-sm cursor-pointer"
+              </div>
+              
+              <button 
+                onClick={() => setActiveTab('expenses')}
+                className={`w-full mt-6 py-2.5 rounded-xl border font-medium text-sm transition-colors ${
+                  theme === 'dark' 
+                  ? 'border-slate-700 text-slate-300 hover:bg-slate-800' 
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
               >
-                Logout
+                View All Transactions
               </button>
             </div>
           </div>
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
-            This is where you'll manage your budget, track expenses, and view your financial insights.
-          </p>
+        )}
 
-          {/* --- UPDATED FINANCIAL OVERVIEW --- */}
-          <MetricCards
-            totalIncome={totalIncome}
-            totalExpenses={totalExpenses}
-            netSavings={netSavings}
-            selectedCurrency={selectedCurrency}
-          />
-
-          {/* --- TABS NAVIGATION --- */}
-          <div className="flex space-x-2 md:space-x-8 border-b-2 border-gray-100 dark:border-gray-700 mb-8 overflow-x-auto">
-            {['expenses', 'income', 'goals', 'tips'].map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`pb-3 px-2 text-sm md:text-base font-semibold uppercase tracking-wider transition-colors whitespace-nowrap
-                  ${activeTab === tab 
-                    ? 'border-b-4 border-blue-500 text-blue-500 dark:text-blue-400' 
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-              >
-                {tab === 'tips' ? 'Saving Tips ✨' : tab}
-              </button>
-            ))}
-          </div>
-
-          {/* --- EXPENSES TAB VIEW --- */}
-          {activeTab === 'expenses' && (
-            <div className="animate-fadeIn">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Budget Progress by Category</h3>
-                <div className="space-y-4">
-                  {categories.map(cat => {
-                    const totalSpent = expenses.filter(exp => exp.category === cat).reduce((sum, exp) => sum + exp.amount, 0);
-                    const budgetAmount = categoryBudgets[cat] || 0;
-                    const progressPercentage = budgetAmount > 0 ? (totalSpent / budgetAmount) * 100 : 0;
-                    const progressColor = progressPercentage > 100 ? 'bg-red-500' : 'bg-blue-500';
-
-                    return (
-                      <div key={cat}>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="font-medium text-gray-700 dark:text-gray-300">{cat}</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {formatCurrency(totalSpent, selectedCurrency)} / {formatCurrency(budgetAmount, selectedCurrency)}
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-600">
-                          <div
-                            className={`${progressColor} h-2.5 rounded-full transition-all duration-500`}
-                            style={{ width: `${Math.min(100, progressPercentage)}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <BudgetForm categories={categories} categoryBudgets={categoryBudgets} onSetBudget={handleSetBudget} selectedCurrency={selectedCurrency} />
-              
-              <ExpenseForm
-                onAddExpense={handleAddExpense}
-                onUpdateExpense={handleUpdateExpense}
-                editingExpense={editingExpense}
-                onCancelEdit={handleCancelEdit}
-              />
-
-              <div className="mt-8">
+        {/* EXPENSES TAB */}
+        {activeTab === 'expenses' && (
+          <div className="animate-fadeIn space-y-6 max-w-4xl mx-auto">
+            <BudgetForm categories={categories} categoryBudgets={categoryBudgets} onSetBudget={handleSetBudget} selectedCurrency={selectedCurrency} />
+            <ExpenseForm onAddExpense={handleAddExpense} onUpdateExpense={handleUpdateExpense} editingExpense={editingExpense} onCancelEdit={handleCancelEdit} />
+            <div className={`p-6 rounded-2xl shadow-lg border ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
                 <SpendingChart expenses={expenses} selectedCurrency={selectedCurrency} />
-              </div>
-
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mt-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                  <input
+            </div>
+            <div className={`p-6 rounded-2xl shadow-lg border mb-6 ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
+              <div className="flex flex-col md:flex-row gap-4 mb-4">
+                 <input
                     type="text"
                     placeholder="Search expenses..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
+                    className={`flex-1 px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-emerald-500 ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                   />
                   <select
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value)}
-                    className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
+                    className={`md:w-48 px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-emerald-500 ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                   >
                     <option value="All">All Categories</option>
                     {categories.map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
-                  <div className="w-full md:w-1/3 flex justify-end gap-2">
-                    <button
-                      onClick={() => setSortBy('amount_desc')}
-                      className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'amount_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                    >
-                      Sort by Amount
-                    </button>
-                    <button
-                      onClick={() => setSortBy('date_desc')}
-                      className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'date_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                    >
-                      Sort by Date
-                    </button>
-                  </div>
+              </div>
+              <ExpenseList expenses={expenses} onEdit={handleEditExpense} onDelete={handleDeleteExpense} selectedCurrency={selectedCurrency} />
+            </div>
+          </div>
+        )}
+
+        {/* INCOME TAB */}
+        {activeTab === 'income' && (
+          <div className="animate-fadeIn max-w-2xl mx-auto">
+            <IncomeForm onAddIncome={handleAddIncome} />
+            {income.length > 0 && (
+              <div className={`mt-6 p-6 rounded-2xl shadow-lg border ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
+                <h3 className={`text-lg font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Income Sources</h3>
+                <div className="space-y-3">
+                  {income.map((inc, i) => (
+                    <div key={i} className={`flex justify-between items-center p-3 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-200'}`}>
+                      <div>
+                         <p className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{inc.source}</p>
+                         <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>{new Date(inc.date).toLocaleDateString()}</p>
+                      </div>
+                      <span className="font-bold text-emerald-500">+{formatCurrency(inc.amount, selectedCurrency)}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
+            )}
+          </div>
+        )}
 
-              <ExpenseList
-                expenses={expenses}
-                onEdit={handleEditExpense}
-                onDelete={handleDeleteExpense}
-                selectedCurrency={selectedCurrency}
-              />
-            </div>
-          )}
+        {/* GOALS TAB */}
+        {activeTab === 'goals' && (
+          <div className="animate-fadeIn max-w-3xl mx-auto">
+             <FinancialGoals goals={goals} onAddGoal={handleAddGoal} onRemoveGoal={handleRemoveGoal} totalSavings={netSavings} selectedCurrency={selectedCurrency} />
+          </div>
+        )}
 
-          {/* --- INCOME TAB VIEW --- */}
-          {activeTab === 'income' && (
-            <div className="animate-fadeIn">
-              <IncomeForm onAddIncome={handleAddIncome} />
-            </div>
-          )}
+        {/* TIPS TAB */}
+        {activeTab === 'tips' && (
+          <div className="animate-fadeIn max-w-3xl mx-auto">
+            <SavingTipsAI totalIncome={totalIncome} totalExpenses={totalExpenses} goals={goals} categoryBudgets={categoryBudgets} />
+          </div>
+        )}
 
-          {/* --- GOALS TAB VIEW --- */}
-          {activeTab === 'goals' && (
-            <div className="animate-fadeIn">
-              <FinancialGoals goals={goals} onAddGoal={handleAddGoal} onRemoveGoal={handleRemoveGoal} totalSavings={netSavings} selectedCurrency={selectedCurrency} />
-            </div>
-          )}
-
-          {/* --- SAVING TIPS TAB VIEW --- */}
-          {activeTab === 'tips' && (
-            <div className="animate-fadeIn">
-              <SavingTipsAI 
-                totalIncome={totalIncome}
-                totalExpenses={totalExpenses}
-                goals={goals}
-                categoryBudgets={categoryBudgets}
-              />
-            </div>
-          )}
-
-        </div>
-      </div>
+      </main>
     </div>
   );
 };
