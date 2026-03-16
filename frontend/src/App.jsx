@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Todos from './Todos';
+import { supabase } from './utils/supabase';
 
 // Function to get the default currency code.
 const getDefaultCurrency = () => {
@@ -45,21 +46,17 @@ const LoginPage = ({ onAuthSuccess, onNavigate }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-    try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        onAuthSuccess();
-      } else {
-        setError(data.msg || 'Login failed');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
+    
+    const { data, error: sbError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (sbError) {
+      setError(sbError.message);
+    } else {
+      localStorage.setItem('token', data.session.access_token);
+      onAuthSuccess();
     }
   };
 
@@ -135,21 +132,19 @@ const RegisterPage = ({ onAuthSuccess, onNavigate }) => {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
-    try {
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        onAuthSuccess();
-      } else {
-        setError(data.msg || 'Registration failed');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
+    
+    const { data, error: sbError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (sbError) {
+      setError(sbError.message);
+    } else if (data.session) {
+      localStorage.setItem('token', data.session.access_token);
+      onAuthSuccess();
+    } else {
+      setError('Registration successful! Please check your email to verify your account.');
     }
   };
 
@@ -391,7 +386,7 @@ const ExpenseList = ({ expenses, onEdit, onDelete, selectedCurrency }) => {
       ) : (
         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
           {expenses.map((expense) => (
-            <li key={expense._id} className={`py-4 flex items-center justify-between ${expense.isRecurring ? 'bg-indigo-50 dark:bg-indigo-900 rounded-lg p-2' : ''}`}>
+            <li key={expense.id || expense._id} className={`py-4 flex items-center justify-between ${expense.isRecurring ? 'bg-indigo-50 dark:bg-indigo-900 rounded-lg p-2' : ''}`}>
               <div className="flex flex-col">
                 <span className="text-gray-900 dark:text-gray-100 font-medium">
                   {expense.name} {expense.isRecurring && <span className="text-xs text-indigo-500 dark:text-indigo-300">(Recurring)</span>}
@@ -407,7 +402,7 @@ const ExpenseList = ({ expenses, onEdit, onDelete, selectedCurrency }) => {
                   Edit
                 </button>
                 <button
-                  onClick={() => onDelete(expense._id)}
+                  onClick={() => onDelete(expense.id || expense._id)}
                   className="bg-red-200 hover:bg-red-300 dark:bg-red-600 dark:hover:bg-red-500 text-red-800 dark:text-red-200 text-xs py-1 px-2 rounded"
                 >
                   Delete
@@ -647,25 +642,35 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
     setLoading(true);
     setError(null);
     try {
-      const queryParams = new URLSearchParams();
-      if (filterCategory !== 'All') queryParams.append('category', filterCategory);
-      if (sortBy) queryParams.append('sort', sortBy);
-      if (searchQuery) queryParams.append('search', searchQuery);
+      let query = supabase.from('expenses').select('*');
 
-      const response = await fetch(`${API_URL}/expenses?${queryParams.toString()}`, {
-        headers: { 'x-auth-token': token },
-      });
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        onNavigate('login');
-        return;
+      if (filterCategory !== 'All') {
+        query = query.eq('category', filterCategory);
       }
-      if (response.ok) {
-        const data = await response.json();
-        setExpenses(data);
-      } else {
-        throw new Error('Failed to fetch expenses');
+      
+      let orderColumn = 'created_at';
+      let ascending = false;
+      if (sortBy === 'amount_desc') {
+        orderColumn = 'amount';
+      } else if (sortBy === 'date_desc') {
+        orderColumn = 'created_at';
       }
+
+      const { data, error: sbError } = await query.order(orderColumn, { ascending });
+
+      if (sbError) {
+        throw new Error(sbError.message);
+      }
+      
+      let filteredData = data;
+      if (searchQuery) {
+        filteredData = data.filter(e => 
+          e.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+          e.category.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      setExpenses(filteredData);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -681,16 +686,22 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
 
   const handleAddExpense = async (newExpense) => {
     try {
-      const response = await fetch(`${API_URL}/expenses`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-        body: JSON.stringify(newExpense),
-      });
-      if (response.ok) {
-        fetchExpenses();
-      } else {
-        throw new Error('Failed to add expense');
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) throw new Error('Not logged in');
+
+      const { error: sbError } = await supabase.from('expenses')
+        .insert([{
+          name: newExpense.name,
+          amount: newExpense.amount,
+          category: newExpense.category,
+          isRecurring: newExpense.isRecurring || false,
+          user_id: userData.user.id
+        }]);
+
+      if (sbError) {
+        throw new Error(sbError.message);
       }
+      fetchExpenses();
     } catch (err) {
       setError(err.message);
     }
@@ -698,16 +709,19 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
 
   const handleUpdateExpense = async (updatedExpense) => {
     try {
-      const response = await fetch(`${API_URL}/expenses/${updatedExpense._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-        body: JSON.stringify(updatedExpense),
-      });
-      if (response.ok) {
-        fetchExpenses();
-      } else {
-        throw new Error('Failed to update expense');
+      const { error: sbError } = await supabase.from('expenses')
+        .update({
+          name: updatedExpense.name,
+          amount: updatedExpense.amount,
+          category: updatedExpense.category,
+          isRecurring: updatedExpense.isRecurring || false
+        })
+        .eq('id', updatedExpense.id || updatedExpense._id);
+
+      if (sbError) {
+        throw new Error(sbError.message);
       }
+      fetchExpenses();
     } catch (err) {
       setError(err.message);
     }
@@ -715,15 +729,14 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
 
   const handleDeleteExpense = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/expenses/${id}`, {
-        method: 'DELETE',
-        headers: { 'x-auth-token': token },
-      });
-      if (response.ok) {
-        fetchExpenses();
-      } else {
-        throw new Error('Failed to delete expense');
+      const { error: sbError } = await supabase.from('expenses')
+        .delete()
+        .eq('id', id);
+
+      if (sbError) {
+        throw new Error(sbError.message);
       }
+      fetchExpenses();
     } catch (err) {
       setError(err.message);
     }
