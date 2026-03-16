@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Todos from './Todos';
 
 // Function to get the default currency code.
 const getDefaultCurrency = () => {
@@ -952,8 +953,12 @@ const App = () => {
   };
 
   return (
-    <div className="font-sans antialiased text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-900">
+    <div className="font-sans antialiased text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-900 min-h-screen">
       {renderPage()}
+      <div className="max-w-4xl mx-auto p-4 mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl mb-8">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Supabase Connection Test (Todos)</h2>
+        <Todos />
+      </div>
     </div>
   );
 };
