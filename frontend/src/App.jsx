@@ -3,6 +3,7 @@ import { supabase } from './utils/supabase';
 import { 
   TrendingUp, TrendingDown, Wallet, Activity, LogOut, ShoppingCart, Zap, Film, Home, Coffee
 } from 'lucide-react';
+import budgetEaseLogo from './assets/budgetease logo.png';
 
 // Function to get the default currency code.
 const getDefaultCurrency = () => {
@@ -63,11 +64,15 @@ const LoginPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} p-4`}>
-      <div className="w-full max-w-sm relative">
+    <div className={`min-h-screen flex items-center justify-center p-4 font-sans selection:bg-emerald-500/30 ${theme === 'dark' ? 'bg-slate-950 text-slate-200' : 'bg-gray-50 text-gray-900'}`}>
+      <div className="w-full max-w-md relative">
+        
+        {/* Theme Toggle placed outside the card for clean look */}
         <button
           onClick={toggleTheme}
-          className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors shadow-sm cursor-pointer z-10"
+          className={`absolute -top-16 right-0 p-2 rounded-full transition-colors shadow-sm cursor-pointer ${
+            theme === 'dark' ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-200'
+          }`}
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
           {theme === 'light' ? (
@@ -76,60 +81,76 @@ const LoginPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
             <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
           )}
         </button>
-        <LogoHeader />
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 mt-4">
-          <h2 className="text-xl font-semibold text-center mb-6 text-gray-900 dark:text-gray-100">
-            Login to Your Account
-          </h2>
-          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-          <form onSubmit={handleLogin}>
-            <div className="mb-4">
-              <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="email">
-                Email
+
+        <div className="flex flex-col items-center mb-8">
+            <img src={budgetEaseLogo} alt="BudgetEase" className="h-16 w-auto mb-4 drop-shadow-lg" />
+            <p className={`mt-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Welcome back. Sign in to your account.</p>
+        </div>
+
+        <div className={`rounded-2xl p-8 border shadow-xl ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
+          {error && (
+            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm p-3 rounded-lg mb-6 text-center">
+              {error}
+            </div>
+          )}
+          
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div>
+              <label className={`block text-sm font-medium mb-1.5 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`} htmlFor="email">
+                Email Address
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
+                  theme === 'dark' 
+                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50' 
+                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
+                }`}
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="mb-6">
-              <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="password">
-                Password
+            
+            <div>
+              <label className={`block text-sm font-medium mb-1.5 flex justify-between ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`} htmlFor="password">
+                <span>Password</span>
+                <a className="text-emerald-500 hover:text-emerald-400 font-medium text-xs transition-colors cursor-pointer">Forgot?</a>
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
+                  theme === 'dark' 
+                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50' 
+                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
+                }`}
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <div className="flex items-center justify-between">
-              <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300"
-                type="submit"
-              >
-                Sign In
-              </button>
-              <a className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="#">
-                Forgot Password?
-              </a>
-            </div>
-          </form>
-          <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-            Don't have an account?{' '}
+            
             <button
-              onClick={() => onNavigate('register')}
-              className="font-bold text-blue-500 hover:text-blue-800 transition duration-300"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-lg shadow-emerald-500/20 flex justify-center items-center mt-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+              type="submit"
             >
-              Sign up
+              Sign In
             </button>
-          </p>
+          </form>
+          
+          <div className="mt-8 text-center">
+            <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>
+              Don't have an account?{' '}
+              <button
+                onClick={() => onNavigate('register')}
+                className="font-bold text-emerald-500 hover:text-emerald-400 transition duration-300 underline-offset-4 hover:underline"
+              >
+                Sign up instead
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -162,11 +183,15 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} p-4`}>
-      <div className="w-full max-w-sm relative">
+    <div className={`min-h-screen flex items-center justify-center p-4 font-sans selection:bg-emerald-500/30 ${theme === 'dark' ? 'bg-slate-950 text-slate-200' : 'bg-gray-50 text-gray-900'}`}>
+      <div className="w-full max-w-md relative">
+        
+        {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors shadow-sm cursor-pointer z-10"
+          className={`absolute -top-16 right-0 p-2 rounded-full transition-colors shadow-sm cursor-pointer ${
+            theme === 'dark' ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-200'
+          }`}
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
           {theme === 'light' ? (
@@ -175,57 +200,75 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
             <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
           )}
         </button>
-        <LogoHeader />
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 mt-4">
-          <h2 className="text-xl font-semibold text-center mb-6 text-gray-900 dark:text-gray-100">
-            Create an Account
-          </h2>
-          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-          <form onSubmit={handleRegister}>
-            <div className="mb-4">
-              <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="email">
-                Email
+
+        <div className="flex flex-col items-center mb-8">
+            <img src={budgetEaseLogo} alt="BudgetEase" className="h-16 w-auto mb-4 drop-shadow-lg" />
+            <p className={`mt-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Start managing your finances today.</p>
+        </div>
+
+        <div className={`rounded-2xl p-8 border shadow-xl ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
+          {error && (
+            <div className={`p-3 rounded-lg mb-6 text-center text-sm ${error.includes('successful') ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-500' : 'bg-rose-500/10 border border-rose-500/20 text-rose-500'}`}>
+              {error}
+            </div>
+          )}
+          
+          <form onSubmit={handleRegister} className="space-y-5">
+            <div>
+              <label className={`block text-sm font-medium mb-1.5 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`} htmlFor="email">
+                Email Address
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
+                  theme === 'dark' 
+                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50' 
+                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
+                }`}
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="mb-6">
-              <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="password">
+            
+            <div>
+              <label className={`block text-sm font-medium mb-1.5 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`} htmlFor="password">
                 Password
               </label>
               <input
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
+                  theme === 'dark' 
+                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50' 
+                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
+                }`}
                 id="password"
                 type="password"
-                placeholder="Choose a password"
+                placeholder="Choose a strong password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <div className="flex items-center justify-center">
-              <button
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300"
-                type="submit"
-              >
-                Sign Up
-              </button>
-            </div>
-          </form>
-          <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-            Already have an account?{' '}
+            
             <button
-              onClick={() => onNavigate('login')}
-              className="font-bold text-blue-500 hover:text-blue-800 transition duration-300"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-lg shadow-emerald-500/20 flex justify-center items-center mt-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+              type="submit"
             >
-              Log in
+              Sign Up
             </button>
-          </p>
+          </form>
+          
+          <div className="mt-8 text-center">
+            <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>
+              Already have an account?{' '}
+              <button
+                onClick={() => onNavigate('login')}
+                className="font-bold text-emerald-500 hover:text-emerald-400 transition duration-300 underline-offset-4 hover:underline"
+              >
+                Log in instead
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -735,7 +778,7 @@ Please give me 3 specific, actionable saving tips tailored exactly to this profi
           'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: 'llama3-8b-8192',
+          model: 'llama-3.1-8b-instant',
           messages: [{ role: 'user', content: prompt }]
         })
       });
@@ -803,7 +846,7 @@ Please give me 3 specific, actionable saving tips tailored exactly to this profi
 };
 
 // Dashboard Component
-const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency, theme, toggleTheme }) => {
+const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurrency, theme, toggleTheme }) => {
   const [expenses, setExpenses] = useState([]);
   const [editingExpense, setEditingExpense] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -934,6 +977,7 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency, them
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    onLogout();
     onNavigate('login');
   };
 
@@ -976,10 +1020,7 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency, them
       <nav className={`${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'} border-b sticky top-0 z-10 shadow-sm`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-emerald-500 text-white font-bold p-1.5 rounded-lg text-sm tracking-wider">
-              BE
-            </div>
-            <span className={`text-xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>BudgetEase</span>
+            <img src={budgetEaseLogo} alt="BudgetEase Logo" className="h-8 w-auto" />
           </div>
           
           <div className="flex items-center gap-4">
@@ -1347,6 +1388,7 @@ const App = () => {
       return (
         <DashboardPage 
           onNavigate={navigateTo} 
+          onLogout={() => setIsAuthenticated(false)}
           selectedCurrency={selectedCurrency} 
           setSelectedCurrency={setSelectedCurrency} 
           theme={theme}
