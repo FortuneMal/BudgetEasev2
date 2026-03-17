@@ -161,6 +161,7 @@ const LoginPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
 const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [error, setError] = useState('');
 
   const handleRegister = async (e) => {
@@ -170,6 +171,11 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
     const { data, error: sbError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          username: username,
+        }
+      }
     });
 
     if (sbError) {
@@ -215,6 +221,25 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
           
           <form onSubmit={handleRegister} className="space-y-5">
             <div>
+              <label className={`block text-sm font-medium mb-1.5 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`} htmlFor="username">
+                Username
+              </label>
+              <input
+                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
+                  theme === 'dark' 
+                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50' 
+                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
+                }`}
+                id="username"
+                type="text"
+                placeholder="e.g. FinanceWizard99"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
               <label className={`block text-sm font-medium mb-1.5 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`} htmlFor="email">
                 Email Address
               </label>
@@ -254,7 +279,7 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
               className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-lg shadow-emerald-500/20 flex justify-center items-center mt-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
               type="submit"
             >
-              Sign Up
+              Create Account
             </button>
           </form>
           
@@ -855,6 +880,7 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
   const [sortBy, setSortBy] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('dashboard'); // New Tab State
+  const [currentUser, setCurrentUser] = useState(null);
 
   // --- NEW STATE for Financial Tracking ---
   const [income, setIncome] = useState([]);
@@ -863,6 +889,15 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
   const categories = ['Groceries', 'Utilities', 'Entertainment', 'Transportation', 'Other'];
 
   const token = localStorage.getItem('token');
+
+  // Fetch current user for personalized greeting
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setCurrentUser(session?.user || null);
+    };
+    getUser();
+  }, []);
   const fetchExpenses = async () => {
     setLoading(true);
     setError(null);
@@ -1072,7 +1107,9 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
         {/* HEADER SECTION */}
         <div className="mb-8 flex justify-between items-end">
           <div>
-            <h1 className={`text-2xl sm:text-3xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Welcome to your Dashboard</h1>
+            <h1 className={`text-2xl sm:text-3xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+              Welcome back, <span className="text-emerald-400">{currentUser?.user_metadata?.username || 'there'}</span>
+            </h1>
             <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Here is what's happening with your money today.</p>
           </div>
         </div>
