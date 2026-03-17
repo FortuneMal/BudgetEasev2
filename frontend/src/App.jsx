@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './utils/supabase';
 import { 
-  TrendingUp, TrendingDown, Wallet, Activity, LogOut, ShoppingCart, Zap, Film, Home, Coffee
+  TrendingUp, TrendingDown, Wallet, Activity, LogOut, ShoppingCart, Zap, Film, Home, Coffee,
+  User, CheckCircle, AlertCircle
 } from 'lucide-react';
 import budgetEaseLogo from './assets/budgetease logo.png';
 
@@ -870,6 +871,107 @@ Please give me 3 specific, actionable saving tips tailored exactly to this profi
   );
 };
 
+// ProfileSettings Component
+const ProfileSettings = ({ theme }) => {
+  const [currentUsername, setCurrentUsername] = useState('');
+  const [newUsername, setNewUsername] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState({ type: '', message: '' });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const name = user.user_metadata?.username || '';
+        setCurrentUsername(name);
+        setNewUsername(name);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setStatus({ type: '', message: '' });
+
+    const { error } = await supabase.auth.updateUser({
+      data: { username: newUsername }
+    });
+
+    if (error) {
+      setStatus({ type: 'error', message: error.message });
+    } else {
+      setStatus({ type: 'success', message: 'Profile updated successfully!' });
+      setCurrentUsername(newUsername);
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <div className="flex justify-center">
+      <div className={`rounded-2xl p-6 sm:p-8 border shadow-lg max-w-md w-full ${
+        theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
+      }`}>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
+            <User size={24} />
+          </div>
+          <h2 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Profile Settings</h2>
+        </div>
+
+        <form onSubmit={handleUpdateProfile} className="space-y-5">
+          <div>
+            <label htmlFor="profile-username" className={`block text-sm font-medium mb-2 ${
+              theme === 'dark' ? 'text-slate-400' : 'text-gray-600'
+            }`}>
+              Display Name
+            </label>
+            <input
+              id="profile-username"
+              type="text"
+              value={newUsername}
+              onChange={(e) => setNewUsername(e.target.value)}
+              disabled={loading}
+              className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors disabled:opacity-50 ${
+                theme === 'dark'
+                  ? 'bg-slate-950 border-slate-700 text-white placeholder-slate-600'
+                  : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400'
+              }`}
+              placeholder="Enter a new username"
+              required
+            />
+          </div>
+
+          {status.message && (
+            <div className={`flex items-center gap-2 text-sm p-3 rounded-lg ${
+              status.type === 'success'
+                ? 'bg-emerald-500/10 text-emerald-500'
+                : 'bg-rose-500/10 text-rose-500'
+            }`}>
+              {status.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+              <span>{status.message}</span>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading || newUsername === currentUsername || !newUsername.trim()}
+            className="w-full bg-emerald-500 text-white rounded-xl px-4 py-3 font-bold hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center shadow-lg shadow-emerald-500/20"
+          >
+            {loading ? (
+              <span className="animate-pulse">Updating...</span>
+            ) : (
+              'Save Changes'
+            )}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 // Dashboard Component
 const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurrency, theme, toggleTheme }) => {
   const [expenses, setExpenses] = useState([]);
@@ -1173,7 +1275,7 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
 
         {/* --- TABS NAVIGATION --- */}
         <div className={`flex space-x-2 md:space-x-8 border-b-2 mb-8 overflow-x-auto ${theme === 'dark' ? 'border-slate-800' : 'border-gray-200'}`}>
-          {['dashboard', 'expenses', 'income', 'goals', 'tips'].map(tab => (
+          {['dashboard', 'expenses', 'income', 'goals', 'tips', 'profile'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1182,7 +1284,7 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
                   ? 'border-b-4 border-emerald-500 text-emerald-500' 
                   : `border-transparent ${theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-700'}`}`}
             >
-              {tab === 'tips' ? 'Saving Tips ✨' : tab === 'dashboard' ? 'Overview' : tab}
+              {tab === 'tips' ? 'Saving Tips ✨' : tab === 'dashboard' ? 'Overview' : tab === 'profile' ? '👤 Profile' : tab}
             </button>
           ))}
         </div>
@@ -1378,6 +1480,13 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
         {activeTab === 'tips' && (
           <div className="animate-fadeIn max-w-3xl mx-auto">
             <SavingTipsAI totalIncome={totalIncome} totalExpenses={totalExpenses} goals={goals} categoryBudgets={categoryBudgets} />
+          </div>
+        )}
+
+        {/* PROFILE TAB */}
+        {activeTab === 'profile' && (
+          <div className="animate-fadeIn max-w-lg mx-auto">
+            <ProfileSettings theme={theme} />
           </div>
         )}
 
