@@ -1284,7 +1284,7 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
                   ? 'border-b-4 border-emerald-500 text-emerald-500' 
                   : `border-transparent ${theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-700'}`}`}
             >
-              {tab === 'tips' ? 'Saving Tips ✨' : tab === 'dashboard' ? 'Overview' : tab === 'profile' ? '👤 Profile' : tab}
+              {tab === 'tips' ? 'Saving Tips' : tab === 'dashboard' ? 'Overview' : tab === 'profile' ? 'Profile' : tab}
             </button>
           ))}
         </div>
