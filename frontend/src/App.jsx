@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './utils/supabase';
 import {
   TrendingUp, TrendingDown, Wallet, Activity, LogOut, ShoppingCart, Zap, Film, Home, Coffee,
-  User, CheckCircle, AlertCircle
+  User, CheckCircle, AlertCircle, Trash2
 } from 'lucide-react';
 import budgetEaseLogo from './assets/budgetease logo.png';
 
@@ -562,11 +562,19 @@ const BudgetForm = ({ categories, categoryBudgets, onSetBudget, selectedCurrency
 const IncomeForm = ({ onAddIncome }) => {
   const [source, setSource] = useState('');
   const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('Salary');
+
+  const incomeCategories = ['Salary', 'Freelance', 'Business', 'Investment', 'Gift', 'Other'];
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (source && amount) {
-      onAddIncome({ source, amount: parseFloat(amount), date: new Date().toISOString() });
+      onAddIncome({
+        source,
+        amount: parseFloat(amount),
+        category,
+        date: new Date().toISOString()
+      });
       setSource('');
       setAmount('');
     }
@@ -601,6 +609,22 @@ const IncomeForm = ({ onAddIncome }) => {
             onChange={(e) => setAmount(e.target.value)}
             required
           />
+        </div>
+        <div className="flex-1 w-full">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="incomeCategory">
+            Category
+          </label>
+          <select
+            id="incomeCategory"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            required
+          >
+            {incomeCategories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
         </div>
         <button
           type="submit"
@@ -974,7 +998,7 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
   const [currentUser, setCurrentUser] = useState(null);
 
   // --- NEW STATE for Financial Tracking ---
-  const [income, setIncome] = useState([]);
+  const [income, setIncome] = useState(JSON.parse(localStorage.getItem('income')) || []);
   const [categoryBudgets, setCategoryBudgets] = useState(JSON.parse(localStorage.getItem('categoryBudgets')) || {});
   const [goals, setGoals] = useState(JSON.parse(localStorage.getItem('goals')) || []);
   const categories = ['Groceries', 'Utilities', 'Entertainment', 'Transportation', 'Other'];
@@ -1117,7 +1141,13 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
   const handleAddIncome = (newIncome) => {
     const newIncomeList = [...income, newIncome];
     setIncome(newIncomeList);
-    // For simplicity, we won't persist income yet, but a future backend would.
+    localStorage.setItem('income', JSON.stringify(newIncomeList));
+  };
+
+  const handleRemoveIncome = (index) => {
+    const newIncomeList = income.filter((_, i) => i !== index);
+    setIncome(newIncomeList);
+    localStorage.setItem('income', JSON.stringify(newIncomeList));
   };
 
   const handleAddGoal = (newGoal) => {
@@ -1442,11 +1472,27 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
                 <div className="space-y-3">
                   {income.map((inc, i) => (
                     <div key={i} className={`flex justify-between items-center p-3 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-200'}`}>
-                      <div>
-                        <p className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{inc.source}</p>
-                        <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>{new Date(inc.date).toLocaleDateString()}</p>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">
+                          <TrendingUp size={16} />
+                        </div>
+                        <div>
+                          <p className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{inc.source}</p>
+                          <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>
+                            {inc.category} • {new Date(inc.date).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
-                      <span className="font-bold text-emerald-500">+{formatCurrency(inc.amount, selectedCurrency)}</span>
+                      <div className="flex items-center gap-4">
+                        <span className="font-bold text-emerald-500">+{formatCurrency(inc.amount, selectedCurrency)}</span>
+                        <button
+                          onClick={() => handleRemoveIncome(i)}
+                          className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'text-slate-500 hover:text-rose-400 hover:bg-rose-500/10' : 'text-gray-400 hover:text-red-600 hover:bg-red-50'}`}
+                          title="Remove income source"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
