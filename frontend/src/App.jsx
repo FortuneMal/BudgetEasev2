@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './utils/supabase';
-import { 
+import {
   TrendingUp, TrendingDown, Wallet, Activity, LogOut, ShoppingCart, Zap, Film, Home, Coffee,
   User, CheckCircle, AlertCircle
 } from 'lucide-react';
@@ -29,11 +29,11 @@ const LogoHeader = () => {
     <header className="bg-white dark:bg-gray-800 shadow-md p-4 mb-8 rounded-lg flex items-center justify-center">
       <div className="flex items-center space-x-4">
         <img
-          src="https://placehold.co/60x60/22c55e/ffffff?text=BE"
+          src={budgetEaseLogo}
           alt="BudgetEase Logo"
-          className="h-12 w-auto rounded-lg"
+          className="h-32 w-auto rounded-xl drop-shadow-xl"
         />
-        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+        <h1 className="text-8xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tighter">
           BudgetEase
         </h1>
       </div>
@@ -67,25 +67,24 @@ const LoginPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 font-sans selection:bg-emerald-500/30 ${theme === 'dark' ? 'bg-slate-950 text-slate-200' : 'bg-gray-50 text-gray-900'}`}>
       <div className="w-full max-w-md relative">
-        
-        {/* Theme Toggle placed outside the card for clean look */}
+
+        {/* Theme Toggle placed fixed in the top right for easy access */}
         <button
           onClick={toggleTheme}
-          className={`absolute -top-16 right-0 p-2 rounded-full transition-colors shadow-sm cursor-pointer ${
-            theme === 'dark' ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-200'
-          }`}
+          className={`fixed top-8 right-8 p-3 rounded-full transition-colors shadow-lg z-50 cursor-pointer ${theme === 'dark' ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-200'
+            }`}
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
           {theme === 'light' ? (
-            <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+            <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
           ) : (
-            <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
           )}
         </button>
 
         <div className="flex flex-col items-center mb-8">
-            <img src={budgetEaseLogo} alt="BudgetEase" className="h-16 w-auto mb-4 drop-shadow-lg" />
-            <p className={`mt-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Welcome back. Sign in to your account.</p>
+          <img src={budgetEaseLogo} alt="BudgetEase" className="h-40 w-auto mb-6 drop-shadow-xl" />
+          <p className={`mt-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Welcome back. Sign in to your account.</p>
         </div>
 
         <div className={`rounded-2xl p-8 border shadow-xl ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
@@ -94,18 +93,17 @@ const LoginPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
               {error}
             </div>
           )}
-          
+
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
               <label className={`block text-sm font-medium mb-1.5 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`} htmlFor="email">
                 Email Address
               </label>
               <input
-                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                  theme === 'dark' 
-                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50' 
+                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${theme === 'dark'
+                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50'
                   : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
-                }`}
+                  }`}
                 id="email"
                 type="email"
                 placeholder="you@example.com"
@@ -113,18 +111,17 @@ const LoginPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            
+
             <div>
               <label className={`block text-sm font-medium mb-1.5 flex justify-between ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`} htmlFor="password">
                 <span>Password</span>
                 <a className="text-emerald-500 hover:text-emerald-400 font-medium text-xs transition-colors cursor-pointer">Forgot?</a>
               </label>
               <input
-                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                  theme === 'dark' 
-                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50' 
+                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${theme === 'dark'
+                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50'
                   : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
-                }`}
+                  }`}
                 id="password"
                 type="password"
                 placeholder="••••••••"
@@ -132,7 +129,7 @@ const LoginPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            
+
             <button
               className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-lg shadow-emerald-500/20 flex justify-center items-center mt-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
               type="submit"
@@ -140,7 +137,7 @@ const LoginPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
               Sign In
             </button>
           </form>
-          
+
           <div className="mt-8 text-center">
             <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>
               Don't have an account?{' '}
@@ -192,25 +189,24 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 font-sans selection:bg-emerald-500/30 ${theme === 'dark' ? 'bg-slate-950 text-slate-200' : 'bg-gray-50 text-gray-900'}`}>
       <div className="w-full max-w-md relative">
-        
-        {/* Theme Toggle */}
+
+        {/* Theme Toggle placed fixed for visibility */}
         <button
           onClick={toggleTheme}
-          className={`absolute -top-16 right-0 p-2 rounded-full transition-colors shadow-sm cursor-pointer ${
-            theme === 'dark' ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-200'
-          }`}
+          className={`fixed top-8 right-8 p-3 rounded-full transition-colors shadow-lg z-50 cursor-pointer ${theme === 'dark' ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-white text-gray-800 hover:bg-gray-100 border border-gray-200'
+            }`}
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
           {theme === 'light' ? (
-            <svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+            <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
           ) : (
-            <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
           )}
         </button>
 
         <div className="flex flex-col items-center mb-8">
-            <img src={budgetEaseLogo} alt="BudgetEase" className="h-16 w-auto mb-4 drop-shadow-lg" />
-            <p className={`mt-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Start managing your finances today.</p>
+          <img src={budgetEaseLogo} alt="BudgetEase" className="h-40 w-auto mb-6 drop-shadow-xl" />
+          <p className={`mt-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Start managing your finances today.</p>
         </div>
 
         <div className={`rounded-2xl p-8 border shadow-xl ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
@@ -219,18 +215,17 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
               {error}
             </div>
           )}
-          
+
           <form onSubmit={handleRegister} className="space-y-5">
             <div>
               <label className={`block text-sm font-medium mb-1.5 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`} htmlFor="username">
                 Username
               </label>
               <input
-                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                  theme === 'dark' 
-                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50' 
+                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${theme === 'dark'
+                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50'
                   : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
-                }`}
+                  }`}
                 id="username"
                 type="text"
                 placeholder="e.g. FinanceWizard99"
@@ -245,11 +240,10 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
                 Email Address
               </label>
               <input
-                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                  theme === 'dark' 
-                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50' 
+                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${theme === 'dark'
+                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50'
                   : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
-                }`}
+                  }`}
                 id="email"
                 type="email"
                 placeholder="you@example.com"
@@ -257,17 +251,16 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            
+
             <div>
               <label className={`block text-sm font-medium mb-1.5 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`} htmlFor="password">
                 Password
               </label>
               <input
-                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                  theme === 'dark' 
-                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50' 
+                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${theme === 'dark'
+                  ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-600 focus:border-emerald-500/50'
                   : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
-                }`}
+                  }`}
                 id="password"
                 type="password"
                 placeholder="Choose a strong password"
@@ -275,7 +268,7 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            
+
             <button
               className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-lg shadow-emerald-500/20 flex justify-center items-center mt-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
               type="submit"
@@ -283,7 +276,7 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
               Create Account
             </button>
           </form>
-          
+
           <div className="mt-8 text-center">
             <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>
               Already have an account?{' '}
@@ -716,7 +709,7 @@ const MetricCards = ({ totalIncome, totalExpenses, netSavings, selectedCurrency,
   return (
     // The main grid container: 1 column on mobile, 4 columns on medium+ screens
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 w-full max-w-6xl mx-auto">
-      
+
       {/* 1. Total Income Card */}
       <div className={`${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl p-6 border shadow-lg hover:shadow-xl transition-shadow duration-300`}>
         <div className="flex justify-between items-start mb-4">
@@ -831,7 +824,7 @@ Please give me 3 specific, actionable saving tips tailored exactly to this profi
       <p className="text-gray-600 dark:text-gray-400 mb-6 font-medium">
         Get personalized recommendations on how to allocate your budget and boost your savings, powered instantly by Groq.
       </p>
-      
+
       {!tips && !loading && !error && (
         <button
           onClick={fetchTips}
@@ -844,8 +837,8 @@ Please give me 3 specific, actionable saving tips tailored exactly to this profi
       {loading && (
         <div className="flex items-center gap-3 text-indigo-500 font-medium tracking-wide">
           <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
           Analyzing profile...
         </div>
@@ -911,9 +904,8 @@ const ProfileSettings = ({ theme }) => {
 
   return (
     <div className="flex justify-center">
-      <div className={`rounded-2xl p-6 sm:p-8 border shadow-lg max-w-md w-full ${
-        theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
-      }`}>
+      <div className={`rounded-2xl p-6 sm:p-8 border shadow-lg max-w-md w-full ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'
+        }`}>
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
             <User size={24} />
@@ -923,9 +915,8 @@ const ProfileSettings = ({ theme }) => {
 
         <form onSubmit={handleUpdateProfile} className="space-y-5">
           <div>
-            <label htmlFor="profile-username" className={`block text-sm font-medium mb-2 ${
-              theme === 'dark' ? 'text-slate-400' : 'text-gray-600'
-            }`}>
+            <label htmlFor="profile-username" className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'
+              }`}>
               Display Name
             </label>
             <input
@@ -934,22 +925,20 @@ const ProfileSettings = ({ theme }) => {
               value={newUsername}
               onChange={(e) => setNewUsername(e.target.value)}
               disabled={loading}
-              className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors disabled:opacity-50 ${
-                theme === 'dark'
-                  ? 'bg-slate-950 border-slate-700 text-white placeholder-slate-600'
-                  : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400'
-              }`}
+              className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors disabled:opacity-50 ${theme === 'dark'
+                ? 'bg-slate-950 border-slate-700 text-white placeholder-slate-600'
+                : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400'
+                }`}
               placeholder="Enter a new username"
               required
             />
           </div>
 
           {status.message && (
-            <div className={`flex items-center gap-2 text-sm p-3 rounded-lg ${
-              status.type === 'success'
-                ? 'bg-emerald-500/10 text-emerald-500'
-                : 'bg-rose-500/10 text-rose-500'
-            }`}>
+            <div className={`flex items-center gap-2 text-sm p-3 rounded-lg ${status.type === 'success'
+              ? 'bg-emerald-500/10 text-emerald-500'
+              : 'bg-rose-500/10 text-rose-500'
+              }`}>
               {status.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
               <span>{status.message}</span>
             </div>
@@ -1152,20 +1141,19 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
 
   return (
     <div className={`min-h-screen font-sans selection:bg-emerald-500/30 ${theme === 'dark' ? 'bg-slate-950 text-slate-200' : 'bg-gray-50 text-gray-900'}`}>
-      
+
       {/* TOP NAVIGATION */}
       <nav className={`${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'} border-b sticky top-0 z-10 shadow-sm`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={budgetEaseLogo} alt="BudgetEase Logo" className="h-8 w-auto" />
+            <img src={budgetEaseLogo} alt="BudgetEase Logo" className="h-14 w-auto" />
           </div>
-          
+
           <div className="flex items-center gap-4">
             <button
               onClick={toggleTheme}
-              className={`p-2 rounded-full transition-colors shadow-sm cursor-pointer ${
-                theme === 'dark' ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-              }`}
+              className={`p-2 rounded-full transition-colors shadow-sm cursor-pointer ${theme === 'dark' ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                }`}
               title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
               {theme === 'light' ? (
@@ -1177,8 +1165,8 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
 
             <div className={`flex items-center gap-2 rounded-lg p-1 border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-300'}`}>
               <span className={`text-xs pl-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Currency:</span>
-              <select 
-                value={selectedCurrency} 
+              <select
+                value={selectedCurrency}
                 onChange={(e) => setSelectedCurrency(e.target.value)}
                 className={`bg-transparent text-sm font-medium focus:outline-none pr-2 pb-0.5 cursor-pointer appearance-none ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
               >
@@ -1187,15 +1175,14 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
                 ))}
               </select>
             </div>
-            
+
             <button
-               onClick={handleLogout}
-               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-transparent ${
-                 theme === 'dark'
-                 ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/20'
-                 : 'text-gray-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200'
-               }`}
-             >
+              onClick={handleLogout}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-transparent ${theme === 'dark'
+                ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/20'
+                : 'text-gray-500 hover:text-red-600 hover:bg-red-50 hover:border-red-200'
+                }`}
+            >
               <LogOut size={16} />
               <span className="hidden sm:inline">Logout</span>
             </button>
@@ -1205,7 +1192,7 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
 
       {/* MAIN CONTENT */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         {/* HEADER SECTION */}
         <div className="mb-8 flex justify-between items-end">
           <div>
@@ -1218,7 +1205,7 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
 
         {/* METRICS GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-          
+
           <div className={`${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'} rounded-2xl p-6 border shadow-lg relative overflow-hidden group`}>
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity text-emerald-500">
               <TrendingUp size={80} />
@@ -1280,8 +1267,8 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`pb-3 px-2 text-sm md:text-base font-semibold uppercase tracking-wider transition-colors whitespace-nowrap
-                ${activeTab === tab 
-                  ? 'border-b-4 border-emerald-500 text-emerald-500' 
+                ${activeTab === tab
+                  ? 'border-b-4 border-emerald-500 text-emerald-500'
                   : `border-transparent ${theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-700'}`}`}
             >
               {tab === 'tips' ? 'Saving Tips' : tab === 'dashboard' ? 'Overview' : tab === 'profile' ? 'Profile' : tab}
@@ -1294,25 +1281,25 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
         {/* DASHBOARD OVERVIEW TAB (THE NEW UI) */}
         {activeTab === 'dashboard' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 animate-fadeIn">
-            
+
             {/* BUDGET PROGRESS */}
             <div className={`lg:col-span-2 rounded-2xl p-6 sm:p-8 border shadow-lg ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
-               <div className="flex justify-between items-center mb-6">
+              <div className="flex justify-between items-center mb-6">
                 <h2 className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Budget Progress</h2>
                 <button onClick={() => setActiveTab('expenses')} className="text-sm font-medium text-emerald-500 hover:text-emerald-400">Manage Budgets &rarr;</button>
               </div>
-              
+
               <div className="space-y-6">
                 {categories.map((catString) => {
                   const totalSpent = expenses.filter(exp => exp.category === catString).reduce((sum, exp) => sum + exp.amount, 0);
                   const limit = categoryBudgets[catString] || 0;
-                  
+
                   // fallback to not showing unbudgeted empty categories
                   if (limit === 0 && totalSpent === 0) return null;
 
                   const percentage = limit > 0 ? Math.min((totalSpent / limit) * 100, 100) : (totalSpent > 0 ? 100 : 0);
                   const isOverBudget = limit > 0 && totalSpent > limit;
-                  
+
                   let Icon = Activity;
                   let colorClass = 'bg-slate-500';
                   if (catString === 'Home' || catString === 'Housing & Rent') { Icon = Home; colorClass = 'bg-indigo-500'; }
@@ -1342,9 +1329,9 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
                           )}
                         </div>
                       </div>
-                      
+
                       <div className={`w-full rounded-full h-2.5 overflow-hidden border ${theme === 'dark' ? 'bg-slate-800 border-slate-700/50' : 'bg-gray-200 border-gray-300'}`}>
-                        <div 
+                        <div
                           className={`h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden ${isOverBudget ? 'bg-rose-500' : colorClass}`}
                           style={{ width: `${limit > 0 ? percentage : (totalSpent > 0 ? 100 : 0)}%` }}
                         >
@@ -1362,13 +1349,13 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
               <div className="flex justify-between items-center mb-6">
                 <h2 className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Recent Activity</h2>
               </div>
-              
+
               <div className="space-y-4 flex-1">
                 {expenses.slice(0, 5).map((exp) => {
                   let Icon = Activity;
                   let colorClass = 'text-slate-500';
                   let bgClass = 'bg-slate-500/10';
-                  
+
                   if (exp.category === 'Home' || exp.category === 'Housing & Rent') { Icon = Home; colorClass = 'text-indigo-500'; bgClass = 'bg-indigo-500/10'; }
                   else if (exp.category === 'Groceries') { Icon = ShoppingCart; colorClass = 'text-emerald-500'; bgClass = 'bg-emerald-500/10'; }
                   else if (exp.category === 'Utilities') { Icon = Zap; colorClass = 'text-amber-500'; bgClass = 'bg-amber-500/10'; }
@@ -1398,14 +1385,13 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
                   <p className={`text-sm text-center italic mt-auto mb-auto ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>No recent expenses.</p>
                 )}
               </div>
-              
-              <button 
+
+              <button
                 onClick={() => setActiveTab('expenses')}
-                className={`w-full mt-6 py-2.5 rounded-xl border font-medium text-sm transition-colors ${
-                  theme === 'dark' 
-                  ? 'border-slate-700 text-slate-300 hover:bg-slate-800' 
+                className={`w-full mt-6 py-2.5 rounded-xl border font-medium text-sm transition-colors ${theme === 'dark'
+                  ? 'border-slate-700 text-slate-300 hover:bg-slate-800'
                   : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 View All Transactions
               </button>
@@ -1419,27 +1405,27 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
             <BudgetForm categories={categories} categoryBudgets={categoryBudgets} onSetBudget={handleSetBudget} selectedCurrency={selectedCurrency} />
             <ExpenseForm onAddExpense={handleAddExpense} onUpdateExpense={handleUpdateExpense} editingExpense={editingExpense} onCancelEdit={handleCancelEdit} />
             <div className={`p-6 rounded-2xl shadow-lg border ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
-                <SpendingChart expenses={expenses} selectedCurrency={selectedCurrency} />
+              <SpendingChart expenses={expenses} selectedCurrency={selectedCurrency} />
             </div>
             <div className={`p-6 rounded-2xl shadow-lg border mb-6 ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
               <div className="flex flex-col md:flex-row gap-4 mb-4">
-                 <input
-                    type="text"
-                    placeholder="Search expenses..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={`flex-1 px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-emerald-500 ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                  />
-                  <select
-                    value={filterCategory}
-                    onChange={(e) => setFilterCategory(e.target.value)}
-                    className={`md:w-48 px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-emerald-500 ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                  >
-                    <option value="All">All Categories</option>
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
+                <input
+                  type="text"
+                  placeholder="Search expenses..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={`flex-1 px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-emerald-500 ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                />
+                <select
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  className={`md:w-48 px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-emerald-500 ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                >
+                  <option value="All">All Categories</option>
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
               </div>
               <ExpenseList expenses={expenses} onEdit={handleEditExpense} onDelete={handleDeleteExpense} selectedCurrency={selectedCurrency} />
             </div>
@@ -1457,8 +1443,8 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
                   {income.map((inc, i) => (
                     <div key={i} className={`flex justify-between items-center p-3 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-200'}`}>
                       <div>
-                         <p className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{inc.source}</p>
-                         <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>{new Date(inc.date).toLocaleDateString()}</p>
+                        <p className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{inc.source}</p>
+                        <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>{new Date(inc.date).toLocaleDateString()}</p>
                       </div>
                       <span className="font-bold text-emerald-500">+{formatCurrency(inc.amount, selectedCurrency)}</span>
                     </div>
@@ -1472,7 +1458,7 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
         {/* GOALS TAB */}
         {activeTab === 'goals' && (
           <div className="animate-fadeIn max-w-3xl mx-auto">
-             <FinancialGoals goals={goals} onAddGoal={handleAddGoal} onRemoveGoal={handleRemoveGoal} totalSavings={netSavings} selectedCurrency={selectedCurrency} />
+            <FinancialGoals goals={goals} onAddGoal={handleAddGoal} onRemoveGoal={handleRemoveGoal} totalSavings={netSavings} selectedCurrency={selectedCurrency} />
           </div>
         )}
 
@@ -1500,7 +1486,7 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
   const [currentPage, setCurrentPage] = useState(isAuthenticated ? 'dashboard' : 'login');
   const [selectedCurrency, setSelectedCurrency] = useState(getDefaultCurrency());
-  
+
   // Lift Theme State
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'light';
@@ -1532,11 +1518,11 @@ const App = () => {
   const renderPage = () => {
     if (isAuthenticated) {
       return (
-        <DashboardPage 
-          onNavigate={navigateTo} 
+        <DashboardPage
+          onNavigate={navigateTo}
           onLogout={() => setIsAuthenticated(false)}
-          selectedCurrency={selectedCurrency} 
-          setSelectedCurrency={setSelectedCurrency} 
+          selectedCurrency={selectedCurrency}
+          setSelectedCurrency={setSelectedCurrency}
           theme={theme}
           toggleTheme={toggleTheme}
         />

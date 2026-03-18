@@ -8,9 +8,9 @@ const LogoHeader = () => {
         <img
           src={budgetEaseLogo}
           alt="BudgetEase Logo"
-          className="h-10 w-auto rounded-lg"
+          className="h-14 w-auto rounded-lg"
         />
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
           BudgetEase
         </h1>
       </div>
