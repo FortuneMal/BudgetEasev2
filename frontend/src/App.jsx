@@ -160,6 +160,7 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [currency, setCurrency] = useState('USD');
   const [error, setError] = useState('');
 
   const handleRegister = async (e) => {
@@ -172,6 +173,7 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
       options: {
         data: {
           username: username,
+          currency: currency,
         }
       }
     });
@@ -269,6 +271,25 @@ const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
               />
             </div>
 
+            <div>
+              <label className={`block text-sm font-medium mb-1.5 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`} htmlFor="currency">
+                Default Currency
+              </label>
+              <select
+                id="currency"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className={`w-full px-4 py-2.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors appearance-none ${theme === 'dark'
+                  ? 'bg-slate-950 border-slate-800 text-white'
+                  : 'bg-gray-50 border-gray-200 text-gray-900'
+                  }`}
+              >
+                {CURRENCIES.map(code => (
+                  <option key={code} value={code}>{code}</option>
+                ))}
+              </select>
+            </div>
+
             <button
               className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-lg shadow-emerald-500/20 flex justify-center items-center mt-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
               type="submit"
@@ -316,16 +337,22 @@ const SpendingChart = ({ expenses, selectedCurrency }) => {
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
       <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Spending by Category</h3>
-      <div className="flex items-end justify-around h-48 md:h-64 border-b border-gray-300 dark:border-gray-600">
+      <div className="flex items-end justify-around h-48 md:h-64 border-b-2 border-gray-300 dark:border-gray-600">
         {spendingByCategory.map(item => (
-          <div key={item.category} className="flex flex-col items-center h-full w-1/5">
+          <div key={item.category} className="flex flex-col items-center justify-end h-full w-1/5">
             <div
-              className={`w-3/5 rounded-t-lg transition-all duration-500 ${colors[item.category]}`}
+              className={`w-3/5 rounded-t-lg transition-all duration-700 ease-out shadow-sm ${colors[item.category]}`}
               style={{ height: `${(item.total / maxSpending) * 100}%` }}
               title={formatCurrency(item.total, selectedCurrency)}
             ></div>
-            <span className="mt-2 text-xs font-semibold text-gray-600 dark:text-gray-400">{item.category}</span>
           </div>
+        ))}
+      </div>
+      <div className="flex justify-around mt-3">
+        {spendingByCategory.map(item => (
+          <span key={item.category} className="w-1/5 text-center text-[10px] md:text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-tight">
+            {item.category}
+          </span>
         ))}
       </div>
     </div>
@@ -791,7 +818,8 @@ const MetricCards = ({ totalIncome, totalExpenses, netSavings, selectedCurrency,
   );
 };
 
-const SavingTipsAI = ({ totalIncome, totalExpenses, goals, categoryBudgets }) => {
+const SavingTipsAI = ({ totalIncome, totalExpenses, goals, categoryBudgets, selectedCurrency, selectedMonth, selectedYear }) => {
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const [tips, setTips] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -805,14 +833,14 @@ const SavingTipsAI = ({ totalIncome, totalExpenses, goals, categoryBudgets }) =>
         throw new Error('Groq API Key is not configured. Please add VITE_GROQ_API_KEY to your .env file inside frontend directory, then restart your dev server.');
       }
 
-      const prompt = `You are a strict, concise, and helpful financial advisor. Here is my current financial profile:
+      const prompt = `You are a strict, concise, and helpful financial advisor. All currency values mentioned below are in ${selectedCurrency}. Here is my current financial profile for ${months[selectedMonth]} ${selectedYear}:
 - Total Income: ${totalIncome}
 - Total Expenses: ${totalExpenses}
 - Net Cash Flow: ${totalIncome - totalExpenses}
 - Active Goals: ${goals.length > 0 ? goals.map(g => g.name).join(', ') : 'None'}
 - Category Budgets Setup: ${Object.keys(categoryBudgets).length > 0 ? Object.keys(categoryBudgets).join(', ') : 'None'}
 
-Please give me 3 specific, actionable saving tips tailored exactly to this profile. Limit your response to 3 short bullet points. Do not include introductory text, just the bullet points.`;
+Please give me 3 specific, actionable financial tips tailored exactly to this profile. Assess my expenses thoroughly and identify specific spending habits I should decrease to improve my financial health. Don't just focus on generic savings or emergency funds, but identify potential category-specific cuts based on this profile. Limit your response to 3 short bullet points. Do not include introductory text, just the bullet points. Please use ${selectedCurrency} for any monetary references in your tips.`;
 
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -889,9 +917,11 @@ Please give me 3 specific, actionable saving tips tailored exactly to this profi
 };
 
 // ProfileSettings Component
-const ProfileSettings = ({ theme }) => {
+const ProfileSettings = ({ theme, selectedCurrency, setSelectedCurrency }) => {
   const [currentUsername, setCurrentUsername] = useState('');
   const [newUsername, setNewUsername] = useState('');
+  const [currentCurrency, setCurrentCurrency] = useState('');
+  const [newCurrency, setNewCurrency] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', message: '' });
 
@@ -900,8 +930,11 @@ const ProfileSettings = ({ theme }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const name = user.user_metadata?.username || '';
+        const currency = user.user_metadata?.currency || 'USD';
         setCurrentUsername(name);
         setNewUsername(name);
+        setCurrentCurrency(currency);
+        setNewCurrency(currency);
       }
     };
     fetchUser();
@@ -913,7 +946,10 @@ const ProfileSettings = ({ theme }) => {
     setStatus({ type: '', message: '' });
 
     const { error } = await supabase.auth.updateUser({
-      data: { username: newUsername }
+      data: { 
+        username: newUsername,
+        currency: newCurrency 
+      }
     });
 
     if (error) {
@@ -921,6 +957,8 @@ const ProfileSettings = ({ theme }) => {
     } else {
       setStatus({ type: 'success', message: 'Profile updated successfully!' });
       setCurrentUsername(newUsername);
+      setCurrentCurrency(newCurrency);
+      setSelectedCurrency(newCurrency);
     }
 
     setLoading(false);
@@ -958,6 +996,27 @@ const ProfileSettings = ({ theme }) => {
             />
           </div>
 
+          <div>
+            <label htmlFor="profile-currency" className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'
+              }`}>
+              Default Currency
+            </label>
+            <select
+              id="profile-currency"
+              value={newCurrency}
+              onChange={(e) => setNewCurrency(e.target.value)}
+              disabled={loading}
+              className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors disabled:opacity-50 appearance-none ${theme === 'dark'
+                ? 'bg-slate-950 border-slate-700 text-white'
+                : 'bg-gray-50 border-gray-300 text-gray-900'
+                }`}
+            >
+              {CURRENCIES.map(code => (
+                <option key={code} value={code}>{code}</option>
+              ))}
+            </select>
+          </div>
+
           {status.message && (
             <div className={`flex items-center gap-2 text-sm p-3 rounded-lg ${status.type === 'success'
               ? 'bg-emerald-500/10 text-emerald-500'
@@ -970,7 +1029,7 @@ const ProfileSettings = ({ theme }) => {
 
           <button
             type="submit"
-            disabled={loading || newUsername === currentUsername || !newUsername.trim()}
+            disabled={loading || (newUsername === currentUsername && newCurrency === currentCurrency) || !newUsername.trim()}
             className="w-full bg-emerald-500 text-white rounded-xl px-4 py-3 font-bold hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center shadow-lg shadow-emerald-500/20"
           >
             {loading ? (
@@ -996,6 +1055,12 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('dashboard'); // New Tab State
   const [currentUser, setCurrentUser] = useState(null);
+  
+  // Month/Year Selection State
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i);
 
   // --- NEW STATE for Financial Tracking ---
   const [income, setIncome] = useState(JSON.parse(localStorage.getItem('income')) || []);
@@ -1005,11 +1070,17 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
 
   const token = localStorage.getItem('token');
 
-  // Fetch current user for personalized greeting
+  // Fetch current user for personalized greeting and initial currency sync
   useEffect(() => {
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setCurrentUser(session?.user || null);
+      const user = session?.user || null;
+      setCurrentUser(user);
+      
+      // sync selected currency with profile default if available
+      if (user?.user_metadata?.currency) {
+        setSelectedCurrency(user.user_metadata.currency);
+      }
     };
     getUser();
   }, []);
@@ -1037,9 +1108,21 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
         throw new Error(sbError.message);
       }
 
-      let filteredData = data;
+      // Filter by Month and Year + Recurring logic
+      const filteredByDate = data.filter(e => {
+        const d = new Date(e.created_at);
+        const matchesMonth = d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
+        // recurring expenses carry over if they were created in the past or current month
+        const isRecurringCarryOver = e.isRecurring && (
+          d.getFullYear() < selectedYear ||
+          (d.getFullYear() === selectedYear && d.getMonth() <= selectedMonth)
+        );
+        return matchesMonth || isRecurringCarryOver;
+      });
+
+      let filteredData = filteredByDate;
       if (searchQuery) {
-        filteredData = data.filter(e =>
+        filteredData = filteredByDate.filter(e =>
           e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           e.category.toLowerCase().includes(searchQuery.toLowerCase())
         );
@@ -1057,7 +1140,7 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
     if (token) {
       fetchExpenses();
     }
-  }, [token, filterCategory, sortBy, searchQuery]);
+  }, [token, filterCategory, sortBy, searchQuery, selectedMonth, selectedYear]);
 
   const handleAddExpense = async (newExpense) => {
     try {
@@ -1162,8 +1245,13 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
     localStorage.setItem('goals', JSON.stringify(newGoals));
   };
 
+  const filteredIncome = income.filter(inc => {
+    const d = new Date(inc.date);
+    return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
+  });
+
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-  const totalIncome = income.reduce((sum, inc) => sum + inc.amount, 0);
+  const totalIncome = filteredIncome.reduce((sum, inc) => sum + inc.amount, 0);
   const netSavings = totalIncome - totalExpenses;
 
   if (loading) return <div className="text-center text-lg mt-8">Loading...</div>;
@@ -1224,12 +1312,29 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* HEADER SECTION */}
-        <div className="mb-8 flex justify-between items-end">
+        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
             <h1 className={`text-2xl sm:text-3xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
               Welcome back, <span className="text-emerald-400">{currentUser?.user_metadata?.username || 'there'}</span>
             </h1>
             <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Here is what's happening with your money today.</p>
+          </div>
+          
+          <div className="flex gap-2 w-full md:w-auto">
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              className={`flex-1 md:w-32 px-3 py-2 rounded-lg border focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-gray-300'}`}
+            >
+              {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
+            </select>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className={`flex-1 md:w-28 px-3 py-2 rounded-lg border focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-gray-300'}`}
+            >
+              {years.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
           </div>
         </div>
 
@@ -1466,11 +1571,11 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
         {activeTab === 'income' && (
           <div className="animate-fadeIn max-w-2xl mx-auto">
             <IncomeForm onAddIncome={handleAddIncome} />
-            {income.length > 0 && (
+            {filteredIncome.length > 0 && (
               <div className={`mt-6 p-6 rounded-2xl shadow-lg border ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
-                <h3 className={`text-lg font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Income Sources</h3>
+                <h3 className={`text-lg font-bold mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Income Sources for {months[selectedMonth]} {selectedYear}</h3>
                 <div className="space-y-3">
-                  {income.map((inc, i) => (
+                  {filteredIncome.map((inc, i) => (
                     <div key={i} className={`flex justify-between items-center p-3 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-200'}`}>
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">
@@ -1486,7 +1591,7 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
                       <div className="flex items-center gap-4">
                         <span className="font-bold text-emerald-500">+{formatCurrency(inc.amount, selectedCurrency)}</span>
                         <button
-                          onClick={() => handleRemoveIncome(i)}
+                          onClick={() => handleRemoveIncome(income.indexOf(inc))}
                           className={`p-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'text-slate-500 hover:text-rose-400 hover:bg-rose-500/10' : 'text-gray-400 hover:text-red-600 hover:bg-red-50'}`}
                           title="Remove income source"
                         >
@@ -1511,14 +1616,22 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
         {/* TIPS TAB */}
         {activeTab === 'tips' && (
           <div className="animate-fadeIn max-w-3xl mx-auto">
-            <SavingTipsAI totalIncome={totalIncome} totalExpenses={totalExpenses} goals={goals} categoryBudgets={categoryBudgets} />
+            <SavingTipsAI 
+                totalIncome={totalIncome} 
+                totalExpenses={totalExpenses} 
+                goals={goals} 
+                categoryBudgets={categoryBudgets} 
+                selectedCurrency={selectedCurrency} 
+                selectedMonth={selectedMonth} 
+                selectedYear={selectedYear} 
+            />
           </div>
         )}
 
         {/* PROFILE TAB */}
         {activeTab === 'profile' && (
           <div className="animate-fadeIn max-w-lg mx-auto">
-            <ProfileSettings theme={theme} />
+            <ProfileSettings theme={theme} selectedCurrency={selectedCurrency} setSelectedCurrency={setSelectedCurrency} />
           </div>
         )}
 
