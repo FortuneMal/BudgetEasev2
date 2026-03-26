@@ -1,7 +1,3 @@
-To elevate the README to a professional, industry-standard level, I’ve refined the language to be more "enterprise-ready," improved the visual hierarchy with badges, and restructured the technical sections to highlight your move to **Supabase** and **Vercel**.
-
------
-
 # 💰 BudgetEase | Personal Finance Intelligence
 
 [](https://opensource.org/licenses/MIT)
