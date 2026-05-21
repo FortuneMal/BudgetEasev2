@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
-import { User, CheckCircle, AlertCircle, Shield, Settings } from 'lucide-react';
+import { User, CheckCircle, AlertCircle, Shield, Settings, Crown } from 'lucide-react';
 
-const ProfileTab = ({ theme, selectedCurrency, setSelectedCurrency, CURRENCIES }) => {
+const ProfileTab = ({ selectedCurrency, setSelectedCurrency, CURRENCIES }) => {
   const [currentUsername, setCurrentUsername] = useState('');
   const [newUsername, setNewUsername] = useState('');
   const [currentCurrency, setCurrentCurrency] = useState('');
@@ -40,35 +40,37 @@ const ProfileTab = ({ theme, selectedCurrency, setSelectedCurrency, CURRENCIES }
     if (error) {
       setStatus({ type: 'error', message: error.message });
     } else {
-      setStatus({ type: 'success', message: 'Profile updated successfully!' });
+      setStatus({ type: 'success', message: 'Client profile updated successfully.' });
       setCurrentUsername(newUsername);
       setCurrentCurrency(newCurrency);
       setSelectedCurrency(newCurrency);
-      setTimeout(() => setStatus({ type: '', message: '' }), 3000);
+      setTimeout(() => setStatus({ type: '', message: '' }), 4000);
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="flex justify-center animate-fadeIn py-8">
-      <div className={`rounded-3xl p-8 border shadow-2xl max-w-lg w-full ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
+    <div className="flex justify-center animate-fadeIn py-10 relative z-10">
+      <div className="glass-card rounded-3xl p-8 sm:p-12 max-w-xl w-full border-gold-gradient relative overflow-hidden">
         
-        <div className="flex items-center gap-4 mb-8">
-          <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-500">
-            <User size={28} />
+        <div className="absolute top-0 right-0 w-48 h-48 bg-gold-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="flex items-center gap-6 mb-10 border-b border-obsidian-700/50 pb-6 relative z-10">
+          <div className="p-4 bg-obsidian-900 border border-obsidian-700 rounded-2xl text-gold-500 shadow-inner">
+            <Crown size={32} />
           </div>
           <div>
-            <h2 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Profile Settings</h2>
-            <p className={`text-sm font-medium mt-1 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Manage your account details and preferences.</p>
+            <h2 className="text-3xl font-serif text-white tracking-wide">Client Profile</h2>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-platinum-500 mt-1">Manage Account Preferences</p>
           </div>
         </div>
 
-        <form onSubmit={handleUpdateProfile} className="space-y-6">
-          <div className={`p-6 rounded-2xl border ${theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-gray-50 border-gray-200'}`}>
-            <label htmlFor="profile-username" className={`flex items-center gap-2 text-sm font-bold mb-3 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
-              <Shield size={16} className="text-indigo-500" />
-              Display Name
+        <form onSubmit={handleUpdateProfile} className="space-y-8 relative z-10">
+          <div className="p-8 rounded-2xl bg-obsidian-900/40 border border-obsidian-700 shadow-inner">
+            <label htmlFor="profile-username" className="flex items-center gap-3 text-[10px] font-bold mb-4 uppercase tracking-widest text-platinum-400">
+              <Shield size={14} className="text-gold-500" />
+              Client Name
             </label>
             <input
               id="profile-username"
@@ -76,64 +78,58 @@ const ProfileTab = ({ theme, selectedCurrency, setSelectedCurrency, CURRENCIES }
               value={newUsername}
               onChange={(e) => setNewUsername(e.target.value)}
               disabled={loading}
-              className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors disabled:opacity-50 ${theme === 'dark'
-                ? 'bg-slate-900 border-slate-700 text-white placeholder-slate-600'
-                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                }`}
-              placeholder="Enter a new username"
+              className="w-full rounded-xl px-5 py-4 bg-obsidian-900 border border-obsidian-600 text-white placeholder-obsidian-500 focus:outline-none focus:border-gold-500 transition-colors font-serif text-lg disabled:opacity-50"
+              placeholder="Enter your preferred name"
               required
             />
           </div>
 
-          <div className={`p-6 rounded-2xl border ${theme === 'dark' ? 'bg-slate-950/50 border-slate-800' : 'bg-gray-50 border-gray-200'}`}>
-            <label htmlFor="profile-currency" className={`flex items-center gap-2 text-sm font-bold mb-3 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
-              <Settings size={16} className="text-indigo-500" />
-              Default Currency
+          <div className="p-8 rounded-2xl bg-obsidian-900/40 border border-obsidian-700 shadow-inner">
+            <label htmlFor="profile-currency" className="flex items-center gap-3 text-[10px] font-bold mb-4 uppercase tracking-widest text-platinum-400">
+              <Settings size={14} className="text-gold-500" />
+              Base Currency
             </label>
             <select
               id="profile-currency"
               value={newCurrency}
               onChange={(e) => setNewCurrency(e.target.value)}
               disabled={loading}
-              className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors disabled:opacity-50 appearance-none font-bold ${theme === 'dark'
-                ? 'bg-slate-900 border-slate-700 text-white'
-                : 'bg-white border-gray-300 text-gray-900'
-                }`}
+              className="w-full rounded-xl px-5 py-4 bg-obsidian-900 border border-obsidian-600 text-gold-400 focus:outline-none focus:border-gold-500 transition-colors font-bold tracking-widest disabled:opacity-50 appearance-none cursor-pointer"
             >
               {CURRENCIES.map(code => (
-                <option key={code} value={code}>{code}</option>
+                <option key={code} value={code} className="bg-obsidian-900">{code}</option>
               ))}
             </select>
-            <p className={`text-xs mt-3 font-medium ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>
-              This will update the default currency across all your devices.
+            <p className="text-[10px] font-bold uppercase tracking-widest text-platinum-500 mt-4 leading-relaxed">
+              This establishes the global denomination for your wealth portfolio across all synchronized devices.
             </p>
           </div>
 
           {status.message && (
-            <div className={`flex items-center gap-3 p-4 rounded-xl border ${status.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'
-              : 'bg-rose-500/10 border-rose-500/20 text-rose-500'
+            <div className={`flex items-center gap-4 p-5 rounded-xl border font-bold text-xs uppercase tracking-widest shadow-inner ${status.type === 'success'
+              ? 'bg-obsidian-900 border-gold-500/30 text-gold-500'
+              : 'bg-red-900/20 border-red-500/30 text-red-400'
               }`}>
-              {status.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
-              <span className="font-semibold">{status.message}</span>
+              {status.type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+              <span>{status.message}</span>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading || (newUsername === currentUsername && newCurrency === currentCurrency) || !newUsername.trim()}
-            className="w-full bg-indigo-500 text-white rounded-xl px-4 py-4 font-bold text-lg hover:bg-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center shadow-lg shadow-indigo-500/30"
+            className="w-full bg-gold-gradient hover:opacity-90 text-obsidian-900 font-bold text-sm uppercase tracking-widest py-5 px-4 rounded-xl transition duration-300 shadow-[0_10px_30px_rgba(212,175,55,0.2)] disabled:opacity-30 disabled:cursor-not-allowed flex justify-center items-center shimmer-effect"
           >
             {loading ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+              <span className="flex items-center gap-3">
+                <svg className="animate-spin h-5 w-5 text-obsidian-900" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Saving Changes...
+                Processing...
               </span>
             ) : (
-              'Save Changes'
+              'Save Preferences'
             )}
           </button>
         </form>

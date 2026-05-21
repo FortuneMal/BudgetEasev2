@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Target, Trash2, Plus, TrendingUp, Award, Rocket } from 'lucide-react';
 
-const GoalsTab = ({ goals, onAddGoal, onRemoveGoal, totalSavings, selectedCurrency, theme }) => {
+const GoalsTab = ({ goals, onAddGoal, onRemoveGoal, totalSavings, selectedCurrency }) => {
   const [goalName, setGoalName] = useState('');
   const [goalAmount, setGoalAmount] = useState('');
 
@@ -23,53 +23,54 @@ const GoalsTab = ({ goals, onAddGoal, onRemoveGoal, totalSavings, selectedCurren
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn max-w-4xl mx-auto">
+    <div className="space-y-10 animate-fadeIn max-w-4xl mx-auto relative z-10">
       
-      <div className={`p-6 sm:p-8 rounded-2xl shadow-lg border ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
-        <h3 className={`text-xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Add Savings Goal</h3>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-5">
+      <div className="glass-card p-6 sm:p-10 rounded-2xl relative border-gold-gradient">
+        <h3 className="text-2xl font-serif text-white mb-8 tracking-wide border-b border-obsidian-700/50 pb-4">Define Financial Objective</h3>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-6">
           <div className="md:col-span-2">
-            <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Goal Name</label>
+            <label className="block text-[10px] font-bold mb-2 uppercase tracking-widest text-platinum-400">Objective Name</label>
             <input
               type="text"
               value={goalName}
               onChange={(e) => setGoalName(e.target.value)}
-              className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors ${theme === 'dark' ? 'bg-slate-950 border-slate-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
-              placeholder="e.g. New Car Downpayment"
+              className="w-full rounded-xl px-4 py-3 bg-obsidian-900/50 border border-obsidian-600 text-white placeholder-obsidian-500 focus:outline-none focus:border-gold-500 transition-colors font-medium shadow-inner"
+              placeholder="e.g. Asset Acquisition"
               required
             />
           </div>
           <div className="md:col-span-2">
-            <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Target Amount</label>
+            <label className="block text-[10px] font-bold mb-2 uppercase tracking-widest text-platinum-400">Target Capital</label>
             <input
               type="number"
               step="0.01"
               value={goalAmount}
               onChange={(e) => setGoalAmount(e.target.value)}
-              className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors ${theme === 'dark' ? 'bg-slate-950 border-slate-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
+              className="w-full rounded-xl px-4 py-3 bg-obsidian-900/50 border border-obsidian-600 text-white placeholder-obsidian-500 focus:outline-none focus:border-gold-500 transition-colors font-medium shadow-inner"
               required
             />
           </div>
-          <div className="md:col-span-1 pt-2 md:pt-7">
+          <div className="md:col-span-1 pt-2 md:pt-6">
             <button
               type="submit"
-              className="w-full h-[50px] bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl transition duration-300 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2"
+              className="w-full h-[52px] bg-gold-gradient hover:opacity-90 text-obsidian-900 font-bold text-xs uppercase tracking-widest rounded-xl transition duration-300 shadow-[0_10px_20px_rgba(212,175,55,0.2)] flex items-center justify-center gap-2 shimmer-effect"
             >
-              <Plus size={20} />
-              <span className="md:hidden">Add Goal</span>
+              <Plus size={16} />
+              <span className="md:hidden">Add Objective</span>
             </button>
           </div>
         </form>
       </div>
 
-      <div className={`p-6 sm:p-8 rounded-2xl shadow-lg border ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
-        <div className="flex justify-between items-center mb-8 border-b pb-4 border-gray-200 dark:border-slate-700">
-          <h3 className={`text-xl font-bold flex items-center gap-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-            <Target className="text-indigo-500" />
-            Active Goals
+      <div className="glass-card p-6 sm:p-10 rounded-2xl relative border-gold-gradient">
+        <div className="flex justify-between items-center mb-8 border-b border-obsidian-700/50 pb-6">
+          <h3 className="text-2xl font-serif text-white tracking-wide flex items-center gap-3">
+            <Target className="text-gold-500" />
+            Active Objectives
           </h3>
-          <div className={`px-4 py-1.5 rounded-full text-sm font-bold ${theme === 'dark' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-            Available Net Savings: {formatCurrency(totalSavings)}
+          <div className="px-5 py-2 rounded-xl bg-obsidian-900 border border-obsidian-700 shadow-inner">
+            <span className="text-[10px] uppercase tracking-widest text-platinum-400 font-bold block mb-1">Available Capital</span>
+            <span className="text-gold-500 font-serif text-xl">{formatCurrency(totalSavings)}</span>
           </div>
         </div>
 
@@ -80,54 +81,51 @@ const GoalsTab = ({ goals, onAddGoal, onRemoveGoal, totalSavings, selectedCurren
             const isCompleted = progressPercentage >= 100;
 
             const Icon = isCompleted ? Award : Rocket;
-            const colorClass = isCompleted ? 'text-emerald-500' : 'text-indigo-500';
-            const bgClass = isCompleted ? 'bg-emerald-500/10' : 'bg-indigo-500/10';
-            const barClass = isCompleted ? 'bg-emerald-500' : 'bg-indigo-500';
 
             return (
-              <div key={goal.id} className={`relative overflow-hidden p-6 rounded-xl border transition-all hover:shadow-md ${theme === 'dark' ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-gray-200'}`}>
+              <div key={goal.id} className="relative overflow-hidden p-6 rounded-2xl bg-obsidian-900/40 border border-obsidian-700 hover:border-gold-500/30 transition-all hover:bg-obsidian-800/60 group shadow-inner">
                 {isCompleted && (
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-gold-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
                 )}
                 
-                <div className="flex justify-between items-start mb-4 relative z-10">
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-xl ${bgClass} ${colorClass}`}>
+                <div className="flex justify-between items-start mb-6 relative z-10">
+                  <div className="flex items-center gap-5">
+                    <div className="p-3 rounded-xl bg-obsidian-900 text-gold-500 border border-obsidian-700 shadow-inner group-hover:border-gold-500/50 transition-colors">
                       <Icon size={24} />
                     </div>
                     <div>
-                      <h4 className={`font-bold text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{goal.name}</h4>
-                      <p className={`text-sm font-medium mt-0.5 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>
-                        {formatCurrency(progress)} saved of {formatCurrency(goal.target)}
+                      <h4 className="font-bold text-lg text-platinum-200 group-hover:text-white transition-colors">{goal.name}</h4>
+                      <p className="text-[10px] font-bold uppercase tracking-widest mt-1 text-platinum-500">
+                        {formatCurrency(progress)} secured of {formatCurrency(goal.target)}
                       </p>
                     </div>
                   </div>
                   <button 
                     onClick={() => onRemoveGoal(goal.id)} 
-                    className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'text-slate-500 hover:text-rose-400 hover:bg-rose-500/20' : 'text-gray-400 hover:text-red-600 hover:bg-red-50'}`}
+                    className="p-2 rounded-lg transition-colors text-platinum-500 hover:text-red-400 hover:bg-red-500/20"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={16} />
                   </button>
                 </div>
 
                 <div className="relative z-10">
-                  <div className="flex justify-between text-xs font-bold mb-2">
-                    <span className={`${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Progress</span>
-                    <span className={colorClass}>{progressPercentage.toFixed(1)}%</span>
+                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest mb-3">
+                    <span className="text-platinum-400">Acquisition Progress</span>
+                    <span className="text-gold-500">{progressPercentage.toFixed(1)}%</span>
                   </div>
-                  <div className={`w-full rounded-full h-3 overflow-hidden border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gray-200 border-gray-300'}`}>
+                  <div className="w-full h-1.5 bg-obsidian-900 rounded-full overflow-hidden shadow-inner border border-obsidian-800">
                     <div
-                      className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${barClass}`}
+                      className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${isCompleted ? 'bg-gold-400' : 'bg-gold-gradient'}`}
                       style={{ width: `${Math.min(100, progressPercentage)}%` }}
                     >
-                      <div className="absolute top-0 left-0 right-0 bottom-0 bg-white/20 transform -skew-x-12 -translate-x-full hover:translate-x-full transition-transform duration-1000"></div>
+                      <div className="absolute top-0 left-0 right-0 bottom-0 bg-white/30 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                     </div>
                   </div>
                   
                   {isCompleted && (
-                    <p className="mt-4 text-sm font-bold text-emerald-500 flex items-center gap-2">
-                      <Award size={16} />
-                      Goal Accomplished!
+                    <p className="mt-4 text-[10px] font-bold uppercase tracking-widest text-gold-400 flex items-center gap-2">
+                      <Award size={14} />
+                      Objective Successfully Acquired
                     </p>
                   )}
                 </div>
@@ -136,9 +134,9 @@ const GoalsTab = ({ goals, onAddGoal, onRemoveGoal, totalSavings, selectedCurren
           })}
 
           {goals.length === 0 && (
-            <div className={`text-center py-12 border-2 border-dashed rounded-xl ${theme === 'dark' ? 'border-slate-700 text-slate-500' : 'border-gray-200 text-gray-500'}`}>
-              <Target size={48} className="mx-auto mb-4 opacity-20" />
-              <p className="font-medium">No savings goals yet. Start dreaming big!</p>
+            <div className="text-center py-16 border border-dashed border-obsidian-700 rounded-2xl bg-obsidian-900/30">
+              <Target size={40} className="mx-auto mb-4 opacity-20 text-gold-500" />
+              <p className="font-serif italic text-platinum-500 text-lg">No objectives defined. Set your first financial target.</p>
             </div>
           )}
         </div>

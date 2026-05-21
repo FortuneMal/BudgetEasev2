@@ -11,22 +11,26 @@ const CURRENCIES = ['USD', 'EUR', 'GBP', 'ZAR', 'JPY', 'AUD', 'CAD'];
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentPage, setCurrentPage] = useState('login');
-  const [theme, setTheme] = useState('dark');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
 
-  // Initialize theme and auth
+  // Handle Theme Toggle
   useEffect(() => {
-    // 1. Setup Theme
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-    } else {
+    if (theme === 'dark') {
       document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
-    // 2. Setup Auth & Listeners
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  useEffect(() => {
+    // Setup Auth & Listeners
     const initAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -57,17 +61,10 @@ const App = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
-  };
-
   if (loadingAuth) {
     return (
-      <div className={`min-h-screen flex items-center justify-center font-bold text-xl ${theme === 'dark' ? 'bg-slate-950 text-emerald-500' : 'bg-gray-50 text-emerald-600'}`}>
-        <div className="animate-pulse">Loading BudgetEase...</div>
+      <div className="min-h-screen flex items-center justify-center font-bold text-xl bg-obsidian-900 text-gold-500">
+        <div className="animate-pulse">Loading Premium Experience...</div>
       </div>
     );
   }
@@ -78,8 +75,6 @@ const App = () => {
         <LoginPage 
           onAuthSuccess={() => setCurrentPage('dashboard')} 
           onNavigate={setCurrentPage} 
-          theme={theme}
-          toggleTheme={toggleTheme}
         />
       )}
       
@@ -87,8 +82,6 @@ const App = () => {
         <RegisterPage 
           onAuthSuccess={() => setCurrentPage('dashboard')} 
           onNavigate={setCurrentPage} 
-          theme={theme}
-          toggleTheme={toggleTheme}
         />
       )}
       

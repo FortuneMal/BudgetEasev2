@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 import { loadUserData, saveUserData } from '../utils/dataStore';
-import { LogOut } from 'lucide-react';
+import { LogOut, Diamond } from 'lucide-react';
 import budgetEaseLogo from '../assets/budgetease logo.png';
 
 // Components
-import ThemeToggle from './ThemeToggle';
 import MetricCards from './MetricCards';
 import OverviewTab from './OverviewTab';
 import ExpensesTab from './ExpensesTab';
@@ -14,8 +13,9 @@ import GoalsTab from './GoalsTab';
 import SavingTipsTab from './SavingTipsTab';
 import ProfileTab from './ProfileTab';
 import CurrencyConverter from './CurrencyConverter';
+import ThemeToggle from './ThemeToggle';
 
-const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurrency, theme, toggleTheme, CURRENCIES }) => {
+const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurrency, CURRENCIES, theme, toggleTheme }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
@@ -175,187 +175,192 @@ const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurr
   
   // Calculate Actual Remaining Budget
   const totalBudgetedAmount = Object.values(categoryBudgets).reduce((sum, amount) => sum + amount, 0);
-  // Only count expenses that fall into budgeted categories towards the "Remaining Budget" calculation
   const budgetedExpenses = expenses.filter(e => categoryBudgets[e.category] > 0).reduce((sum, e) => sum + e.amount, 0);
   const remainingBudget = totalBudgetedAmount - budgetedExpenses;
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-xl text-emerald-500 font-bold animate-pulse">Loading Your Dashboard...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-xl text-gold-500 font-serif animate-pulse">Loading Your Portfolio...</div>;
 
   return (
-    <div className={`min-h-screen font-sans transition-colors duration-300 selection:bg-emerald-500/30 ${theme === 'dark' ? 'bg-slate-950 text-slate-200' : 'bg-gray-50 text-gray-900'}`}>
-      
-      {/* HEADER NAV */}
-      <nav className={`border-b sticky top-0 z-50 shadow-sm backdrop-blur-md ${theme === 'dark' ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-gray-200'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
-            <img src={budgetEaseLogo} alt="BudgetEase Logo" className="h-12 w-auto drop-shadow-md" />
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-4">
-            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
-
-            <div className={`hidden sm:flex items-center gap-2 rounded-xl p-1 border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gray-100 border-gray-200'}`}>
-              <span className={`text-xs pl-2 font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Cur</span>
-              <select
-                value={selectedCurrency}
-                onChange={(e) => setSelectedCurrency(e.target.value)}
-                className={`bg-transparent text-sm font-extrabold focus:outline-none pr-2 appearance-none cursor-pointer ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
-              >
-                {CURRENCIES.map(code => <option key={code} value={code} className="text-gray-900">{code}</option>)}
-              </select>
+    <div className="min-h-screen font-sans bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] bg-cover bg-fixed bg-center">
+      <div className="min-h-screen bg-obsidian-900/90 backdrop-blur-md">
+        
+        {/* HEADER NAV */}
+        <nav className="border-b border-obsidian-700/50 sticky top-0 z-50 shadow-2xl bg-obsidian-900/60 backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setActiveTab('dashboard')}>
+              <div className="w-10 h-10 bg-gold-gradient rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.2)] group-hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all">
+                <span className="font-serif text-2xl font-bold text-obsidian-900">B</span>
+              </div>
+              <span className="text-2xl font-serif text-white tracking-wider">BudgetEase</span>
             </div>
 
-            <button
-              onClick={handleLogout}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all border border-transparent ${theme === 'dark'
-                ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/10'
-                : 'text-gray-500 hover:text-red-600 hover:bg-red-50'
-                }`}
-            >
-              <LogOut size={18} />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
-          </div>
-        </div>
-      </nav>
+            <div className="flex items-center gap-4 sm:gap-6">
+              <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+              <div className="hidden sm:flex items-center gap-2 rounded-xl p-1 bg-obsidian-800/50 border border-obsidian-700">
+                <Diamond size={14} className="text-gold-500 ml-2" />
+                <select
+                  value={selectedCurrency}
+                  onChange={(e) => setSelectedCurrency(e.target.value)}
+                  className="bg-transparent text-sm font-bold focus:outline-none pr-2 appearance-none cursor-pointer text-platinum-300 hover:text-gold-400 transition-colors"
+                >
+                  {CURRENCIES.map(code => <option key={code} value={code} className="bg-obsidian-900 text-platinum-200">{code}</option>)}
+                </select>
+              </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* WELCOME HEADER */}
-        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-          <div>
-            <h1 className={`text-3xl sm:text-4xl font-extrabold mb-2 tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-              Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-500">{currentUser?.user_metadata?.username || 'there'}</span>
-            </h1>
-            <p className={`font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Here is what's happening with your finances this month.</p>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all text-platinum-400 hover:text-gold-400 hover:bg-obsidian-800"
+              >
+                <LogOut size={18} />
+                <span className="hidden sm:inline">Sign Out</span>
+              </button>
+            </div>
           </div>
+        </nav>
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative">
           
-          <div className="flex gap-3 w-full md:w-auto shadow-sm">
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              className={`flex-1 md:w-36 px-4 py-2.5 font-bold rounded-xl border focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-colors appearance-none ${theme === 'dark' ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-gray-300'}`}
-            >
-              {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
-            </select>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className={`flex-1 md:w-28 px-4 py-2.5 font-bold rounded-xl border focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-colors appearance-none ${theme === 'dark' ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-gray-300'}`}
-            >
-              {years.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
+          {/* Ambient background glows */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+          
+          {/* WELCOME HEADER */}
+          <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative z-10">
+            <div>
+              <p className="text-gold-500 font-bold tracking-widest uppercase text-xs mb-2">Private Wealth Overview</p>
+              <h1 className="text-4xl sm:text-5xl font-serif mb-2 tracking-wide text-white">
+                Welcome back, <span className="text-gold-gradient">{currentUser?.user_metadata?.username || 'Client'}</span>.
+              </h1>
+              <p className="font-medium text-platinum-400">Here is the current state of your financial portfolio.</p>
+            </div>
+            
+            <div className="flex gap-3 w-full md:w-auto shadow-[0_0_30px_rgba(0,0,0,0.5)] rounded-2xl bg-obsidian-800/80 border border-obsidian-700/50 p-1 backdrop-blur-md">
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                className="flex-1 md:w-36 px-4 py-2.5 font-bold rounded-xl bg-transparent text-platinum-200 focus:outline-none appearance-none cursor-pointer hover:text-gold-400 transition-colors"
+              >
+                {months.map((m, i) => <option key={m} value={i} className="bg-obsidian-900">{m}</option>)}
+              </select>
+              <div className="w-px bg-obsidian-700 my-2"></div>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                className="flex-1 md:w-28 px-4 py-2.5 font-bold rounded-xl bg-transparent text-platinum-200 focus:outline-none appearance-none cursor-pointer hover:text-gold-400 transition-colors"
+              >
+                {years.map(y => <option key={y} value={y} className="bg-obsidian-900">{y}</option>)}
+              </select>
+            </div>
           </div>
-        </div>
 
-        {error && (
-          <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-xl font-medium">
-            Error: {error}
+          {error && (
+            <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl font-medium shadow-lg backdrop-blur-sm">
+              Error: {error}
+            </div>
+          )}
+
+          {/* METRICS GRID */}
+          <div className="relative z-10">
+            <MetricCards 
+              totalIncome={totalIncome}
+              totalExpenses={totalExpenses}
+              netSavings={netSavings}
+              remainingBudget={remainingBudget}
+              selectedCurrency={selectedCurrency}
+            />
           </div>
-        )}
 
-        {/* METRICS GRID */}
-        <MetricCards 
-          totalIncome={totalIncome}
-          totalExpenses={totalExpenses}
-          netSavings={netSavings}
-          remainingBudget={remainingBudget}
-          selectedCurrency={selectedCurrency}
-          theme={theme}
-        />
-
-        {/* TABS NAVIGATION */}
-        <div className={`flex space-x-2 md:space-x-8 border-b-2 mb-8 overflow-x-auto scrollbar-hide ${theme === 'dark' ? 'border-slate-800' : 'border-gray-200'}`}>
-          {['dashboard', 'expenses', 'income', 'goals', 'tips', 'currency', 'profile'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`pb-4 px-2 text-sm md:text-base font-bold uppercase tracking-wider transition-colors whitespace-nowrap
-                ${activeTab === tab
-                  ? 'border-b-4 border-emerald-500 text-emerald-500'
-                  : `border-transparent ${theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-700'}`}`}
-            >
-              {tab === 'tips' ? 'AI Tips' : tab === 'dashboard' ? 'Overview' : tab === 'currency' ? 'Exchange Rates' : tab}
-            </button>
-          ))}
-        </div>
-
-        {/* ACTIVE TAB CONTENT */}
-        {activeTab === 'dashboard' && (
-          <OverviewTab 
-            expenses={expenses} 
-            categoryBudgets={categoryBudgets} 
-            selectedCurrency={selectedCurrency} 
-            theme={theme}
-            setActiveTab={setActiveTab}
-          />
-        )}
-
-        {activeTab === 'expenses' && (
-          <ExpensesTab 
-            expenses={expenses}
-            onAddExpense={handleAddExpense}
-            onUpdateExpense={handleUpdateExpense}
-            onDeleteExpense={handleDeleteExpense}
-            categoryBudgets={categoryBudgets}
-            onSetBudget={handleSetBudget}
-            selectedCurrency={selectedCurrency}
-            theme={theme}
-          />
-        )}
-
-        {activeTab === 'income' && (
-          <IncomeTab 
-            income={income}
-            onAddIncome={handleAddIncome}
-            onRemoveIncome={handleRemoveIncome}
-            selectedMonth={selectedMonth}
-            selectedYear={selectedYear}
-            selectedCurrency={selectedCurrency}
-            theme={theme}
-          />
-        )}
-
-        {activeTab === 'goals' && (
-          <GoalsTab 
-            goals={goals}
-            onAddGoal={handleAddGoal}
-            onRemoveGoal={handleRemoveGoal}
-            totalSavings={netSavings}
-            selectedCurrency={selectedCurrency}
-            theme={theme}
-          />
-        )}
-
-        {activeTab === 'tips' && (
-          <SavingTipsTab 
-            totalIncome={totalIncome}
-            totalExpenses={totalExpenses}
-            goals={goals}
-            categoryBudgets={categoryBudgets}
-            selectedCurrency={selectedCurrency}
-            selectedMonth={selectedMonth}
-            selectedYear={selectedYear}
-            theme={theme}
-          />
-        )}
-
-        {activeTab === 'currency' && (
-          <div className="max-w-2xl mx-auto animate-fadeIn">
-            <CurrencyConverter theme={theme} />
+          {/* TABS NAVIGATION */}
+          <div className="flex space-x-6 md:space-x-10 border-b border-obsidian-700/50 mb-10 overflow-x-auto scrollbar-hide relative z-10">
+            {['dashboard', 'expenses', 'income', 'goals', 'tips', 'currency', 'profile'].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`pb-4 text-[11px] sm:text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap relative
+                  ${activeTab === tab
+                    ? 'text-gold-400'
+                    : 'text-platinum-500 hover:text-platinum-300'}`}
+              >
+                {tab === 'tips' ? 'Advisor' : tab === 'dashboard' ? 'Portfolio' : tab === 'currency' ? 'Exchange' : tab}
+                {activeTab === tab && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold-gradient shadow-[0_-2px_10px_rgba(212,175,55,0.5)]"></div>
+                )}
+              </button>
+            ))}
           </div>
-        )}
 
-        {activeTab === 'profile' && (
-          <ProfileTab 
-            theme={theme}
-            selectedCurrency={selectedCurrency}
-            setSelectedCurrency={setSelectedCurrency}
-            CURRENCIES={CURRENCIES}
-          />
-        )}
+          {/* ACTIVE TAB CONTENT */}
+          <div className="relative z-10">
+            {activeTab === 'dashboard' && (
+              <OverviewTab 
+                expenses={expenses} 
+                categoryBudgets={categoryBudgets} 
+                selectedCurrency={selectedCurrency} 
+                setActiveTab={setActiveTab}
+              />
+            )}
 
-      </main>
+            {activeTab === 'expenses' && (
+              <ExpensesTab 
+                expenses={expenses}
+                onAddExpense={handleAddExpense}
+                onUpdateExpense={handleUpdateExpense}
+                onDeleteExpense={handleDeleteExpense}
+                categoryBudgets={categoryBudgets}
+                onSetBudget={handleSetBudget}
+                selectedCurrency={selectedCurrency}
+              />
+            )}
+
+            {activeTab === 'income' && (
+              <IncomeTab 
+                income={income}
+                onAddIncome={handleAddIncome}
+                onRemoveIncome={handleRemoveIncome}
+                selectedMonth={selectedMonth}
+                selectedYear={selectedYear}
+                selectedCurrency={selectedCurrency}
+              />
+            )}
+
+            {activeTab === 'goals' && (
+              <GoalsTab 
+                goals={goals}
+                onAddGoal={handleAddGoal}
+                onRemoveGoal={handleRemoveGoal}
+                totalSavings={netSavings}
+                selectedCurrency={selectedCurrency}
+              />
+            )}
+
+            {activeTab === 'tips' && (
+              <SavingTipsTab 
+                totalIncome={totalIncome}
+                totalExpenses={totalExpenses}
+                goals={goals}
+                categoryBudgets={categoryBudgets}
+                selectedCurrency={selectedCurrency}
+                selectedMonth={selectedMonth}
+                selectedYear={selectedYear}
+              />
+            )}
+
+            {activeTab === 'currency' && (
+              <div className="max-w-3xl mx-auto animate-fadeIn">
+                <CurrencyConverter />
+              </div>
+            )}
+
+            {activeTab === 'profile' && (
+              <ProfileTab 
+                selectedCurrency={selectedCurrency}
+                setSelectedCurrency={setSelectedCurrency}
+                CURRENCIES={CURRENCIES}
+              />
+            )}
+          </div>
+
+        </main>
+      </div>
     </div>
   );
 };

@@ -1,26 +1,113 @@
-/* frontend/src/index.css */
-
-/* Import Tailwind's base styles, which include a CSS reset and basic styling */
 @tailwind base;
-
-/* Import Tailwind's component classes, like buttons, cards, etc. */
 @tailwind components;
-
-/* Import Tailwind's utility classes, which are the core of Tailwind (e.g., flex, p-4, text-lg) */
 @tailwind utilities;
 
-/* Apply the Inter font globally */
-body {
-  font-family: 'Inter', sans-serif; /* Fallback to generic sans-serif */
-  margin: 0; /* Ensure no default body margin */
-  /* IMPORTANT: Remove any other background-color, display, or layout properties from here */
-  /* The overall background should be set on the root component or its direct children */
+@layer base {
+  :root {
+    /* Light Mode (Platinum Base) */
+    --color-obsidian-900: 248 249 250; /* #f8f9fa */
+    --color-obsidian-800: 233 236 239; /* #e9ecef */
+    --color-obsidian-700: 222 226 230; /* #dee2e6 */
+    --color-obsidian-600: 206 212 218; /* #ced4da */
+    --color-obsidian-500: 173 181 189; /* #adb5bd */
+    
+    --color-platinum-100: 10 10 10;
+    --color-platinum-200: 18 18 18;
+    --color-platinum-300: 26 26 26;
+    --color-platinum-400: 45 45 45;
+    --color-platinum-500: 64 64 64;
+    
+    --color-white: 10 10 10; /* Black text for light mode */
+  }
+
+  .dark {
+    /* Dark Mode (Obsidian Base) */
+    --color-obsidian-900: 10 10 10; /* #0a0a0a */
+    --color-obsidian-800: 18 18 18; /* #121212 */
+    --color-obsidian-700: 26 26 26; /* #1a1a1a */
+    --color-obsidian-600: 45 45 45; /* #2d2d2d */
+    --color-obsidian-500: 64 64 64; /* #404040 */
+    
+    --color-platinum-100: 248 249 250; /* #f8f9fa */
+    --color-platinum-200: 233 236 239; /* #e9ecef */
+    --color-platinum-300: 222 226 230; /* #dee2e6 */
+    --color-platinum-400: 206 212 218; /* #ced4da */
+    --color-platinum-500: 173 181 189; /* #adb5bd */
+    
+    --color-white: 255 255 255; /* White text for dark mode */
+  }
+
+  body {
+    @apply bg-obsidian-900 text-platinum-200 antialiased selection:bg-gold-500/30 selection:text-gold-500;
+    scroll-behavior: smooth;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
 }
 
-/* Ensure the root element takes full viewport dimensions */
-#root {
-  min-height: 100vh; /* Ensure the root element takes at least full viewport height */
-  width: 100vw; /* Ensure it takes full width */
-  /* IMPORTANT: Remove any other display or layout properties from here */
-}
+@layer utilities {
+  .glass-card {
+    @apply bg-obsidian-800/60 backdrop-blur-xl border border-obsidian-700/50 shadow-2xl;
+  }
+  
+  .glass-card-hover {
+    @apply transition-all duration-500 hover:border-gold-500/30 hover:shadow-gold-500/10 hover:-translate-y-1 hover:bg-obsidian-800/80;
+  }
 
+  .text-gold-gradient {
+    @apply bg-clip-text text-transparent bg-gold-gradient;
+  }
+
+  .border-gold-gradient {
+    position: relative;
+  }
+  .border-gold-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(230, 195, 101, 0.4), rgba(212, 175, 55, 0.1), rgba(184, 148, 43, 0.4));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Shimmer effect for buttons/cards */
+  .shimmer-effect {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(212, 175, 55, 0.05) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite linear;
+    pointer-events: none;
+  }
+
+  /* Custom scrollbar for luxury feel */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-obsidian-900;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-obsidian-700 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gold-600;
+  }
+}

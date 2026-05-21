@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ShoppingCart, Zap, Film, Home, Coffee, Activity, Edit2, Trash2, Plus } from 'lucide-react';
 
-const ExpensesTab = ({ expenses, onAddExpense, onUpdateExpense, onDeleteExpense, categoryBudgets, onSetBudget, selectedCurrency, theme }) => {
+const ExpensesTab = ({ expenses, onAddExpense, onUpdateExpense, onDeleteExpense, categoryBudgets, onSetBudget, selectedCurrency }) => {
   const categories = ['Groceries', 'Utilities', 'Entertainment', 'Transportation', 'Home', 'Housing & Rent', 'Other'];
   
   const [filterCategory, setFilterCategory] = useState('All');
@@ -62,48 +62,48 @@ const ExpensesTab = ({ expenses, onAddExpense, onUpdateExpense, onDeleteExpense,
     });
 
   return (
-    <div className="space-y-8 animate-fadeIn max-w-5xl mx-auto">
+    <div className="space-y-10 animate-fadeIn max-w-5xl mx-auto relative z-10">
       
       {/* TOP ROW: SET BUDGET & ADD EXPENSE FORMS */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         
         {/* ADD / EDIT EXPENSE FORM */}
-        <div className={`p-6 sm:p-8 rounded-2xl shadow-lg border ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
-          <h3 className={`text-xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-            {editingId ? 'Edit Expense' : 'Add New Expense'}
+        <div className="glass-card p-6 sm:p-10 rounded-2xl relative border-gold-gradient">
+          <h3 className="text-2xl font-serif text-white mb-8 tracking-wide border-b border-obsidian-700/50 pb-4">
+            {editingId ? 'Modify Ledger Entry' : 'New Ledger Entry'}
           </h3>
-          <form onSubmit={handleExpenseSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <form onSubmit={handleExpenseSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="sm:col-span-2">
-                <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Expense Name</label>
+                <label className="block text-[10px] font-bold mb-2 uppercase tracking-widest text-platinum-400">Transaction Name</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors ${theme === 'dark' ? 'bg-slate-950 border-slate-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
-                  placeholder="e.g. Weekly Groceries"
+                  className="w-full rounded-xl px-4 py-3 bg-obsidian-900/50 border border-obsidian-600 text-white placeholder-obsidian-500 focus:outline-none focus:border-gold-500 transition-colors font-medium shadow-inner"
+                  placeholder="e.g. Fine Dining"
                   required
                 />
               </div>
               <div>
-                <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Amount</label>
+                <label className="block text-[10px] font-bold mb-2 uppercase tracking-widest text-platinum-400">Amount</label>
                 <input
                   type="number"
                   step="0.01"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors ${theme === 'dark' ? 'bg-slate-950 border-slate-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
+                  className="w-full rounded-xl px-4 py-3 bg-obsidian-900/50 border border-obsidian-600 text-white placeholder-obsidian-500 focus:outline-none focus:border-gold-500 transition-colors font-medium shadow-inner"
                   required
                 />
               </div>
               <div>
-                <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Category</label>
+                <label className="block text-[10px] font-bold mb-2 uppercase tracking-widest text-platinum-400">Classification</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors appearance-none ${theme === 'dark' ? 'bg-slate-950 border-slate-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
+                  className="w-full rounded-xl px-4 py-3 bg-obsidian-900/50 border border-obsidian-600 text-white focus:outline-none focus:border-gold-500 transition-colors font-medium appearance-none shadow-inner cursor-pointer"
                 >
-                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                  {categories.map(c => <option key={c} value={c} className="bg-obsidian-900">{c}</option>)}
                 </select>
               </div>
             </div>
@@ -114,25 +114,25 @@ const ExpensesTab = ({ expenses, onAddExpense, onUpdateExpense, onDeleteExpense,
                 id="isRecurring"
                 checked={isRecurring}
                 onChange={(e) => setIsRecurring(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500 transition-colors cursor-pointer"
+                className="w-5 h-5 rounded bg-obsidian-900 border-obsidian-600 text-gold-500 focus:ring-gold-500 transition-colors cursor-pointer accent-gold-500"
               />
-              <label htmlFor="isRecurring" className={`text-sm font-semibold cursor-pointer ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>
-                Recurring Monthly Expense
+              <label htmlFor="isRecurring" className="text-xs font-bold uppercase tracking-widest cursor-pointer text-platinum-400 hover:text-gold-400 transition-colors">
+                Recurring Monthly Outflow
               </label>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-4 pt-4">
               <button
                 type="submit"
-                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-lg shadow-emerald-500/20"
+                className="flex-1 bg-gold-gradient hover:opacity-90 text-obsidian-900 font-bold text-xs uppercase tracking-widest py-4 px-4 rounded-xl transition duration-300 shadow-[0_10px_20px_rgba(212,175,55,0.2)] shimmer-effect"
               >
-                {editingId ? 'Save Changes' : 'Add Expense'}
+                {editingId ? 'Save Revisions' : 'Record Entry'}
               </button>
               {editingId && (
                 <button
                   type="button"
                   onClick={() => { setEditingId(null); setName(''); setAmount(''); setIsRecurring(false); }}
-                  className={`flex-1 font-bold py-3 px-4 rounded-xl transition duration-300 border ${theme === 'dark' ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                  className="flex-1 font-bold text-xs uppercase tracking-widest py-4 px-4 rounded-xl transition duration-300 border border-obsidian-600 bg-obsidian-900/50 text-platinum-300 hover:bg-obsidian-800 hover:text-white shadow-inner"
                 >
                   Cancel
                 </button>
@@ -142,26 +142,26 @@ const ExpensesTab = ({ expenses, onAddExpense, onUpdateExpense, onDeleteExpense,
         </div>
 
         {/* SET BUDGET FORM */}
-        <div className={`p-6 sm:p-8 rounded-2xl shadow-lg border ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
-          <h3 className={`text-xl font-bold mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Set Category Budget</h3>
-          <p className={`text-sm mb-6 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Define monthly spending limits for your categories to track progress.</p>
+        <div className="glass-card p-6 sm:p-10 rounded-2xl relative border-gold-gradient">
+          <h3 className="text-2xl font-serif text-white mb-4 tracking-wide border-b border-obsidian-700/50 pb-4">Establish Allocation</h3>
+          <p className="text-xs font-medium mb-8 text-platinum-500 leading-relaxed">Define precise monthly ceilings for your expenditure categories to maintain wealth trajectories.</p>
           
-          <form onSubmit={handleBudgetSubmit} className="space-y-5">
+          <form onSubmit={handleBudgetSubmit} className="space-y-6">
             <div>
-              <label className={`block text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>Category</label>
+              <label className="block text-[10px] font-bold mb-2 uppercase tracking-widest text-platinum-400">Category</label>
               <select
                 value={budgetCategory}
                 onChange={(e) => setBudgetCategory(e.target.value)}
-                className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors appearance-none ${theme === 'dark' ? 'bg-slate-950 border-slate-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
+                className="w-full rounded-xl px-4 py-3 bg-obsidian-900/50 border border-obsidian-600 text-white focus:outline-none focus:border-gold-500 transition-colors font-medium appearance-none shadow-inner cursor-pointer"
               >
-                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                {categories.map(c => <option key={c} value={c} className="bg-obsidian-900">{c}</option>)}
               </select>
             </div>
             <div>
-              <label className={`block text-sm font-semibold mb-2 flex justify-between ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>
-                <span>Budget Amount</span>
+              <label className="block text-[10px] font-bold mb-2 uppercase tracking-widest flex justify-between text-platinum-400">
+                <span>Allocated Limit</span>
                 {categoryBudgets[budgetCategory] && (
-                  <span className="text-blue-500">Current: {formatCurrency(categoryBudgets[budgetCategory])}</span>
+                  <span className="text-gold-500">Current: {formatCurrency(categoryBudgets[budgetCategory])}</span>
                 )}
               </label>
               <input
@@ -169,16 +169,16 @@ const ExpensesTab = ({ expenses, onAddExpense, onUpdateExpense, onDeleteExpense,
                 step="0.01"
                 value={budgetAmount}
                 onChange={(e) => setBudgetAmount(e.target.value)}
-                className={`w-full rounded-xl px-4 py-3 border focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${theme === 'dark' ? 'bg-slate-950 border-slate-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
+                className="w-full rounded-xl px-4 py-3 bg-obsidian-900/50 border border-obsidian-600 text-white placeholder-obsidian-500 focus:outline-none focus:border-gold-500 transition-colors font-medium shadow-inner"
                 required
               />
             </div>
-            <div className="pt-2">
+            <div className="pt-4">
               <button
                 type="submit"
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-lg shadow-blue-500/20"
+                className="w-full border border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-obsidian-900 font-bold text-xs uppercase tracking-widest py-4 px-4 rounded-xl transition duration-300 shadow-[0_5px_15px_rgba(212,175,55,0.1)]"
               >
-                Set Budget
+                Enforce Allocation
               </button>
             </div>
           </form>
@@ -186,32 +186,32 @@ const ExpensesTab = ({ expenses, onAddExpense, onUpdateExpense, onDeleteExpense,
       </div>
 
       {/* EXPENSE LIST & FILTERS */}
-      <div className={`p-6 sm:p-8 rounded-2xl shadow-lg border ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>All Transactions</h3>
-          <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
+      <div className="glass-card p-6 sm:p-10 rounded-2xl relative border-gold-gradient">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 border-b border-obsidian-700/50 pb-6">
+          <h3 className="text-2xl font-serif text-white tracking-wide">Master Ledger</h3>
+          <div className="flex flex-col sm:flex-row w-full md:w-auto gap-4">
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search Ledger..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full sm:w-48 rounded-xl px-4 py-2.5 border focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors ${theme === 'dark' ? 'bg-slate-950 border-slate-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
+              className="w-full sm:w-48 rounded-xl px-4 py-2.5 bg-obsidian-900/50 border border-obsidian-600 text-white placeholder-obsidian-500 focus:outline-none focus:border-gold-500 transition-colors font-medium text-sm shadow-inner"
             />
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className={`w-full sm:w-40 rounded-xl px-4 py-2.5 border focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors appearance-none ${theme === 'dark' ? 'bg-slate-950 border-slate-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
+              className="w-full sm:w-48 rounded-xl px-4 py-2.5 bg-obsidian-900/50 border border-obsidian-600 text-white focus:outline-none focus:border-gold-500 transition-colors font-medium text-sm appearance-none shadow-inner cursor-pointer"
             >
-              <option value="All">All Categories</option>
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              <option value="All" className="bg-obsidian-900">All Classifications</option>
+              {categories.map(c => <option key={c} value={c} className="bg-obsidian-900">{c}</option>)}
             </select>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className={`w-full sm:w-36 rounded-xl px-4 py-2.5 border focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors appearance-none ${theme === 'dark' ? 'bg-slate-950 border-slate-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
+              className="w-full sm:w-40 rounded-xl px-4 py-2.5 bg-obsidian-900/50 border border-obsidian-600 text-white focus:outline-none focus:border-gold-500 transition-colors font-medium text-sm appearance-none shadow-inner cursor-pointer"
             >
-              <option value="date_desc">Latest First</option>
-              <option value="amount_desc">Highest Amount</option>
+              <option value="date_desc" className="bg-obsidian-900">Latest First</option>
+              <option value="amount_desc" className="bg-obsidian-900">Highest Value</option>
             </select>
           </div>
         </div>
@@ -219,42 +219,40 @@ const ExpensesTab = ({ expenses, onAddExpense, onUpdateExpense, onDeleteExpense,
         <div className="space-y-4">
           {filteredExpenses.map((exp) => {
             let Icon = Activity;
-            let colorClass = 'text-slate-500';
-            let bgClass = 'bg-slate-500/10';
 
-            if (exp.category === 'Home' || exp.category === 'Housing & Rent') { Icon = Home; colorClass = 'text-indigo-500'; bgClass = 'bg-indigo-500/10'; }
-            else if (exp.category === 'Groceries') { Icon = ShoppingCart; colorClass = 'text-emerald-500'; bgClass = 'bg-emerald-500/10'; }
-            else if (exp.category === 'Utilities') { Icon = Zap; colorClass = 'text-amber-500'; bgClass = 'bg-amber-500/10'; }
-            else if (exp.category === 'Entertainment') { Icon = Film; colorClass = 'text-rose-500'; bgClass = 'bg-rose-500/10'; }
-            else if (exp.category === 'Transportation') { Icon = Coffee; colorClass = 'text-blue-500'; bgClass = 'bg-blue-500/10'; }
+            if (exp.category === 'Home' || exp.category === 'Housing & Rent') { Icon = Home; }
+            else if (exp.category === 'Groceries') { Icon = ShoppingCart; }
+            else if (exp.category === 'Utilities') { Icon = Zap; }
+            else if (exp.category === 'Entertainment') { Icon = Film; }
+            else if (exp.category === 'Transportation') { Icon = Coffee; }
 
             return (
-              <div key={exp.id || exp._id} className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl border transition-all hover:shadow-md ${theme === 'dark' ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-gray-200'}`}>
-                <div className="flex items-center gap-4 mb-4 sm:mb-0">
-                  <div className={`p-3 rounded-xl ${bgClass} ${colorClass}`}>
+              <div key={exp.id || exp._id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-xl bg-obsidian-900/40 border border-obsidian-700 hover:border-gold-500/30 transition-all hover:bg-obsidian-800/60 group">
+                <div className="flex items-center gap-5 mb-4 sm:mb-0">
+                  <div className="p-3 rounded-xl bg-obsidian-900 text-platinum-400 group-hover:text-gold-500 border border-obsidian-700 shadow-inner transition-colors">
                     <Icon size={20} />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <p className={`font-bold text-base ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{exp.name}</p>
-                      {exp.isRecurring && <span className="text-[10px] font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full">Recurring</span>}
+                    <div className="flex items-center gap-3">
+                      <p className="font-bold text-base text-platinum-200 group-hover:text-white transition-colors">{exp.name}</p>
+                      {exp.isRecurring && <span className="text-[9px] font-bold uppercase tracking-widest bg-gold-500/10 text-gold-500 border border-gold-500/20 px-2 py-0.5 rounded-sm">Recurring</span>}
                     </div>
-                    <p className={`text-sm font-medium mt-1 ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>
-                      {exp.category} • {new Date(exp.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    <p className="text-[10px] font-bold uppercase tracking-widest mt-1 text-platinum-500">
+                      {exp.category} &bull; {new Date(exp.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </p>
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:gap-4 border-t sm:border-0 pt-4 sm:pt-0 border-gray-200 dark:border-slate-700">
-                  <span className={`font-extrabold text-lg font-['Outfit'] ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                <div className="flex items-center justify-between w-full sm:w-auto gap-6 sm:gap-8 border-t sm:border-0 pt-4 sm:pt-0 border-obsidian-700">
+                  <span className="font-serif text-xl text-white">
                     {formatCurrency(exp.amount)}
                   </span>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => startEdit(exp)} className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'text-slate-400 hover:bg-slate-700 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'}`}>
-                      <Edit2 size={18} />
+                    <button onClick={() => startEdit(exp)} className="p-2 rounded-lg transition-colors text-platinum-500 hover:bg-obsidian-700 hover:text-gold-400">
+                      <Edit2 size={16} />
                     </button>
-                    <button onClick={() => onDeleteExpense(exp.id || exp._id)} className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'text-slate-400 hover:bg-rose-500/20 hover:text-rose-400' : 'text-gray-500 hover:bg-red-50 hover:text-red-600'}`}>
-                      <Trash2 size={18} />
+                    <button onClick={() => onDeleteExpense(exp.id || exp._id)} className="p-2 rounded-lg transition-colors text-platinum-500 hover:bg-red-500/20 hover:text-red-400">
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
@@ -263,9 +261,9 @@ const ExpensesTab = ({ expenses, onAddExpense, onUpdateExpense, onDeleteExpense,
           })}
 
           {filteredExpenses.length === 0 && (
-            <div className={`text-center py-12 border-2 border-dashed rounded-xl ${theme === 'dark' ? 'border-slate-700 text-slate-500' : 'border-gray-200 text-gray-500'}`}>
-              <Activity size={48} className="mx-auto mb-4 opacity-20" />
-              <p className="font-medium">No expenses found matching your criteria.</p>
+            <div className="text-center py-16 border border-dashed border-obsidian-700 rounded-2xl bg-obsidian-900/30">
+              <Activity size={40} className="mx-auto mb-4 opacity-20 text-gold-500" />
+              <p className="font-serif italic text-platinum-500 text-lg">No entries match your search criteria.</p>
             </div>
           )}
         </div>
