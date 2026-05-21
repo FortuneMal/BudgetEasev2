@@ -1,44 +1,92 @@
-// Dashboard Component
-const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) => {
-  const [expenses, setExpenses] = useState([]);
-  const [editingExpense, setEditingExpense] = useState(null);
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../utils/supabase';
+import { loadUserData, saveUserData } from '../utils/dataStore';
+import { LogOut } from 'lucide-react';
+import budgetEaseLogo from '../assets/budgetease logo.png';
+
+// Components
+import ThemeToggle from './ThemeToggle';
+import MetricCards from './MetricCards';
+import OverviewTab from './OverviewTab';
+import ExpensesTab from './ExpensesTab';
+import IncomeTab from './IncomeTab';
+import GoalsTab from './GoalsTab';
+import SavingTipsTab from './SavingTipsTab';
+import ProfileTab from './ProfileTab';
+import CurrencyConverter from './CurrencyConverter';
+
+const DashboardPage = ({ onNavigate, onLogout, selectedCurrency, setSelectedCurrency, theme, toggleTheme, CURRENCIES }) => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filterCategory, setFilterCategory] = useState('All');
-  const [sortBy, setSortBy] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  // --- NEW STATE for Financial Tracking ---
+
+  // Core Data State
+  const [expenses, setExpenses] = useState([]);
   const [income, setIncome] = useState([]);
-  const [categoryBudgets, setCategoryBudgets] = useState(JSON.parse(localStorage.getItem('categoryBudgets')) || {});
-  const [goals, setGoals] = useState(JSON.parse(localStorage.getItem('goals')) || []);
-  const [theme, setTheme] = useState('light'); // New state for theme
-  const categories = ['Groceries', 'Utilities', 'Entertainment', 'Transportation', 'Other'];
+  const [categoryBudgets, setCategoryBudgets] = useState({});
+  const [goals, setGoals] = useState([]);
 
-  const token = localStorage.getItem('token');
-  const fetchExpenses = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const queryParams = new URLSearchParams();
-      if (filterCategory !== 'All') queryParams.append('category', filterCategory);
-      if (sortBy) queryParams.append('sort', sortBy);
-      if (searchQuery) queryParams.append('search', searchQuery);
+  // Time Selection
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i);
 
-      const response = await fetch(`${API_URL}/expenses?${queryParams.toString()}`, {
-        headers: { 'x-auth-token': token },
-      });
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        onNavigate('login');
+  useEffect(() => {
+    const initDashboard = async () => {
+      setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      
+      if (!user) {
+        onLogout();
         return;
       }
-      if (response.ok) {
-        const data = await response.json();
-        setExpenses(data);
-      } else {
-        throw new Error('Failed to fetch expenses');
+      setCurrentUser(user);
+
+      if (user.user_metadata?.currency) {
+        setSelectedCurrency(user.user_metadata.currency);
       }
+
+      // Load Scoped Local Data
+      const loadedIncome = await loadUserData(user.id, 'income', []);
+      const loadedBudgets = await loadUserData(user.id, 'categoryBudgets', {});
+      const loadedGoals = await loadUserData(user.id, 'goals', []);
+      
+      setIncome(loadedIncome);
+      setCategoryBudgets(loadedBudgets);
+      setGoals(loadedGoals);
+
+      // Load Expenses from Supabase
+      await fetchExpenses(user.id);
+    };
+
+    initDashboard();
+  }, []);
+
+  const fetchExpenses = async (userId) => {
+    try {
+      const { data, error: sbError } = await supabase
+        .from('expenses')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (sbError) throw new Error(sbError.message);
+
+      // Filter by Month and Year + Recurring logic
+      const filteredByDate = data.filter(e => {
+        const d = new Date(e.created_at || Date.now());
+        const matchesMonth = d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
+        const isRecurringCarryOver = e.isRecurring && (
+          d.getFullYear() < selectedYear ||
+          (d.getFullYear() === selectedYear && d.getMonth() <= selectedMonth)
+        );
+        return matchesMonth || isRecurringCarryOver;
+      });
+
+      setExpenses(filteredByDate);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -47,252 +95,269 @@ const DashboardPage = ({ onNavigate, selectedCurrency, setSelectedCurrency }) =>
   };
 
   useEffect(() => {
-    if (token) {
-      fetchExpenses();
+    if (currentUser) {
+      fetchExpenses(currentUser.id);
     }
-  }, [token, filterCategory, sortBy, searchQuery]);
+  }, [selectedMonth, selectedYear]);
 
+  // Handlers for Data Mutations
   const handleAddExpense = async (newExpense) => {
     try {
-      const response = await fetch(`${API_URL}/expenses`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-        body: JSON.stringify(newExpense),
-      });
-      if (response.ok) {
-        fetchExpenses();
-      } else {
-        throw new Error('Failed to add expense');
-      }
-    } catch (err) {
-      setError(err.message);
-    }
+      const { error: sbError } = await supabase.from('expenses').insert([{ ...newExpense, user_id: currentUser.id }]);
+      if (sbError) throw new Error(sbError.message);
+      fetchExpenses(currentUser.id);
+    } catch (err) { setError(err.message); }
   };
 
   const handleUpdateExpense = async (updatedExpense) => {
     try {
-      const response = await fetch(`${API_URL}/expenses/${updatedExpense._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-        body: JSON.stringify(updatedExpense),
-      });
-      if (response.ok) {
-        fetchExpenses();
-      } else {
-        throw new Error('Failed to update expense');
-      }
-    } catch (err) {
-      setError(err.message);
-    }
+      const { error: sbError } = await supabase.from('expenses')
+        .update({ name: updatedExpense.name, amount: updatedExpense.amount, category: updatedExpense.category, isRecurring: updatedExpense.isRecurring })
+        .eq('id', updatedExpense.id);
+      if (sbError) throw new Error(sbError.message);
+      fetchExpenses(currentUser.id);
+    } catch (err) { setError(err.message); }
   };
 
   const handleDeleteExpense = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/expenses/${id}`, {
-        method: 'DELETE',
-        headers: { 'x-auth-token': token },
-      });
-      if (response.ok) {
-        fetchExpenses();
-      } else {
-        throw new Error('Failed to delete expense');
-      }
-    } catch (err) {
-      setError(err.message);
-    }
+      const { error: sbError } = await supabase.from('expenses').delete().eq('id', id);
+      if (sbError) throw new Error(sbError.message);
+      fetchExpenses(currentUser.id);
+    } catch (err) { setError(err.message); }
   };
 
-  const handleEditExpense = (expense) => {
-    setEditingExpense(expense);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingExpense(null);
-  };
-
-  // FIX: This function was missing the navigation call.
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    onNavigate('login');
-  };
-
-  // --- NEW FUNCTIONS for Financial Tracking ---
   const handleSetBudget = (category, amount) => {
     const newBudgets = { ...categoryBudgets, [category]: amount };
     setCategoryBudgets(newBudgets);
-    localStorage.setItem('categoryBudgets', JSON.stringify(newBudgets));
+    saveUserData(currentUser.id, 'categoryBudgets', newBudgets);
   };
-  
+
   const handleAddIncome = (newIncome) => {
     const newIncomeList = [...income, newIncome];
     setIncome(newIncomeList);
-    // For simplicity, we won't persist income yet, but a future backend would.
+    saveUserData(currentUser.id, 'income', newIncomeList);
+  };
+
+  const handleRemoveIncome = (index) => {
+    const newIncomeList = income.filter((_, i) => i !== index);
+    setIncome(newIncomeList);
+    saveUserData(currentUser.id, 'income', newIncomeList);
   };
 
   const handleAddGoal = (newGoal) => {
     const newGoals = [...goals, newGoal];
     setGoals(newGoals);
-    localStorage.setItem('goals', JSON.stringify(newGoals));
+    saveUserData(currentUser.id, 'goals', newGoals);
   };
 
   const handleRemoveGoal = (goalId) => {
     const newGoals = goals.filter(goal => goal.id !== goalId);
     setGoals(newGoals);
-    localStorage.setItem('goals', JSON.stringify(newGoals));
+    saveUserData(currentUser.id, 'goals', newGoals);
   };
 
-  const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-  const totalIncome = income.reduce((sum, inc) => sum + inc.amount, 0);
-  const netSavings = totalIncome - totalExpenses;
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    onLogout();
+    onNavigate('login');
+  };
 
-  if (loading) return <div className="text-center text-lg mt-8">Loading...</div>;
-  if (error) return <div className="text-center text-lg text-red-500 mt-8">Error: {error}</div>;
+  // Calculations
+  const filteredIncome = income.filter(inc => {
+    const d = new Date(inc.date);
+    return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
+  });
+
+  const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const totalIncome = filteredIncome.reduce((sum, inc) => sum + inc.amount, 0);
+  const netSavings = totalIncome - totalExpenses;
+  
+  // Calculate Actual Remaining Budget
+  const totalBudgetedAmount = Object.values(categoryBudgets).reduce((sum, amount) => sum + amount, 0);
+  // Only count expenses that fall into budgeted categories towards the "Remaining Budget" calculation
+  const budgetedExpenses = expenses.filter(e => categoryBudgets[e.category] > 0).reduce((sum, e) => sum + e.amount, 0);
+  const remainingBudget = totalBudgetedAmount - budgetedExpenses;
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-xl text-emerald-500 font-bold animate-pulse">Loading Your Dashboard...</div>;
 
   return (
-    <div className={`flex flex-col items-center min-h-screen ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-900'} p-4`}>
-      <div className="w-full max-w-4xl">
-        <LogoHeader />
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col sm:flex-row items-center justify-between mb-6 space-y-4 sm:space-y-0">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-              Welcome to your Dashboard
-            </h2>
-            <div className="flex items-center space-x-4">
-              <label htmlFor="currency-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Currency:
-              </label>
+    <div className={`min-h-screen font-sans transition-colors duration-300 selection:bg-emerald-500/30 ${theme === 'dark' ? 'bg-slate-950 text-slate-200' : 'bg-gray-50 text-gray-900'}`}>
+      
+      {/* HEADER NAV */}
+      <nav className={`border-b sticky top-0 z-50 shadow-sm backdrop-blur-md ${theme === 'dark' ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-gray-200'}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
+            <img src={budgetEaseLogo} alt="BudgetEase Logo" className="h-12 w-auto drop-shadow-md" />
+          </div>
+
+          <div className="flex items-center gap-3 sm:gap-4">
+            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+
+            <div className={`hidden sm:flex items-center gap-2 rounded-xl p-1 border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gray-100 border-gray-200'}`}>
+              <span className={`text-xs pl-2 font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Cur</span>
               <select
-                id="currency-select"
                 value={selectedCurrency}
                 onChange={(e) => setSelectedCurrency(e.target.value)}
-                className="px-2 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                className={`bg-transparent text-sm font-extrabold focus:outline-none pr-2 appearance-none cursor-pointer ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
               >
-                {CURRENCIES.map(code => (
-                  <option key={code} value={code}>
-                    {code}
-                  </option>
-                ))}
+                {CURRENCIES.map(code => <option key={code} value={code} className="text-gray-900">{code}</option>)}
               </select>
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
-              >
-                Logout
-              </button>
             </div>
-          </div>
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
-            This is where you'll manage your budget, track expenses, and view your financial insights.
-          </p>
-          
-          {/* --- UPDATED FINANCIAL OVERVIEW --- */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="bg-green-100 dark:bg-green-900 p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-bold text-green-800 dark:text-green-200 mb-2">Total Income</h3>
-              <p className="text-2xl font-extrabold text-green-900 dark:text-green-100">{formatCurrency(totalIncome, selectedCurrency)}</p>
-            </div>
-            <div className="bg-red-100 dark:bg-red-900 p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-bold text-red-800 dark:text-red-200 mb-2">Total Expenses</h3>
-              <p className="text-2xl font-extrabold text-red-900 dark:text-red-100">{formatCurrency(totalExpenses, selectedCurrency)}</p>
-            </div>
-            <div className="bg-blue-100 dark:bg-blue-900 p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-bold text-blue-800 dark:text-blue-200 mb-2">Net Cash Flow</h3>
-              <p className="text-2xl font-extrabold text-blue-900 dark:text-blue-100">{formatCurrency(netSavings, selectedCurrency)}</p>
-            </div>
-             <div className="bg-purple-100 dark:bg-purple-900 p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-bold text-purple-800 dark:text-purple-200 mb-2">Remaining Budget</h3>
-              <p className="text-2xl font-extrabold text-purple-900 dark:text-purple-100">N/A</p>
-            </div>
-          </div>
 
-          {/* --- NEW SECTION: Category Budgets Progress --- */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Budget Progress by Category</h3>
-            <div className="space-y-4">
-              {categories.map(cat => {
-                const totalSpent = expenses.filter(exp => exp.category === cat).reduce((sum, exp) => sum + exp.amount, 0);
-                const budgetAmount = categoryBudgets[cat] || 0;
-                const progressPercentage = budgetAmount > 0 ? (totalSpent / budgetAmount) * 100 : 0;
-                const progressColor = progressPercentage > 100 ? 'bg-red-500' : 'bg-blue-500';
-
-                return (
-                  <div key={cat}>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="font-medium text-gray-700 dark:text-gray-300">{cat}</span>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {formatCurrency(totalSpent, selectedCurrency)} / {formatCurrency(budgetAmount, selectedCurrency)}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-600">
-                      <div
-                        className={`${progressColor} h-2.5 rounded-full transition-all duration-500`}
-                        style={{ width: `${Math.min(100, progressPercentage)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <button
+              onClick={handleLogout}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all border border-transparent ${theme === 'dark'
+                ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/10'
+                : 'text-gray-500 hover:text-red-600 hover:bg-red-50'
+                }`}
+            >
+              <LogOut size={18} />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
           </div>
-          
-          <BudgetForm categories={categories} categoryBudgets={categoryBudgets} onSetBudget={handleSetBudget} selectedCurrency={selectedCurrency} />
-          <IncomeForm onAddIncome={handleAddIncome} />
-          <ExpenseForm 
-            onAddExpense={handleAddExpense} 
-            onUpdateExpense={handleUpdateExpense}
-            editingExpense={editingExpense}
-            onCancelEdit={handleCancelEdit}
-          />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-            <SpendingChart expenses={expenses} selectedCurrency={selectedCurrency} />
-            <FinancialGoals goals={goals} onAddGoal={handleAddGoal} onRemoveGoal={handleRemoveGoal} totalSavings={netSavings} selectedCurrency={selectedCurrency} />
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mt-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-[O              <input
-                type="text"
-                placeholder="Search expenses..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
-              />
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="w-full md:w-1/3 px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-500"
-              >
-                <option value="All">All Categories</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-              <div className="w-full md:w-1/3 flex justify-end gap-2">
-                <button
-                  onClick={() => setSortBy('amount_desc')}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'amount_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                >
-                  Sort by Amount
-                </button>
-                <button
-                  onClick={() => setSortBy('date_desc')}
-                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${sortBy === 'date_desc' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}
-                >
-                  Sort by Date
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <ExpenseList 
-            expenses={expenses} 
-            onEdit={handleEditExpense} 
-            onDelete={handleDeleteExpense} 
-            selectedCurrency={selectedCurrency}
-          />
         </div>
-      </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* WELCOME HEADER */}
+        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div>
+            <h1 className={`text-3xl sm:text-4xl font-extrabold mb-2 tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+              Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-500">{currentUser?.user_metadata?.username || 'there'}</span>
+            </h1>
+            <p className={`font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Here is what's happening with your finances this month.</p>
+          </div>
+          
+          <div className="flex gap-3 w-full md:w-auto shadow-sm">
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              className={`flex-1 md:w-36 px-4 py-2.5 font-bold rounded-xl border focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-colors appearance-none ${theme === 'dark' ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-gray-300'}`}
+            >
+              {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
+            </select>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className={`flex-1 md:w-28 px-4 py-2.5 font-bold rounded-xl border focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-colors appearance-none ${theme === 'dark' ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-gray-300'}`}
+            >
+              {years.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-xl font-medium">
+            Error: {error}
+          </div>
+        )}
+
+        {/* METRICS GRID */}
+        <MetricCards 
+          totalIncome={totalIncome}
+          totalExpenses={totalExpenses}
+          netSavings={netSavings}
+          remainingBudget={remainingBudget}
+          selectedCurrency={selectedCurrency}
+          theme={theme}
+        />
+
+        {/* TABS NAVIGATION */}
+        <div className={`flex space-x-2 md:space-x-8 border-b-2 mb-8 overflow-x-auto scrollbar-hide ${theme === 'dark' ? 'border-slate-800' : 'border-gray-200'}`}>
+          {['dashboard', 'expenses', 'income', 'goals', 'tips', 'currency', 'profile'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-4 px-2 text-sm md:text-base font-bold uppercase tracking-wider transition-colors whitespace-nowrap
+                ${activeTab === tab
+                  ? 'border-b-4 border-emerald-500 text-emerald-500'
+                  : `border-transparent ${theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-700'}`}`}
+            >
+              {tab === 'tips' ? 'AI Tips' : tab === 'dashboard' ? 'Overview' : tab === 'currency' ? 'Exchange Rates' : tab}
+            </button>
+          ))}
+        </div>
+
+        {/* ACTIVE TAB CONTENT */}
+        {activeTab === 'dashboard' && (
+          <OverviewTab 
+            expenses={expenses} 
+            categoryBudgets={categoryBudgets} 
+            selectedCurrency={selectedCurrency} 
+            theme={theme}
+            setActiveTab={setActiveTab}
+          />
+        )}
+
+        {activeTab === 'expenses' && (
+          <ExpensesTab 
+            expenses={expenses}
+            onAddExpense={handleAddExpense}
+            onUpdateExpense={handleUpdateExpense}
+            onDeleteExpense={handleDeleteExpense}
+            categoryBudgets={categoryBudgets}
+            onSetBudget={handleSetBudget}
+            selectedCurrency={selectedCurrency}
+            theme={theme}
+          />
+        )}
+
+        {activeTab === 'income' && (
+          <IncomeTab 
+            income={income}
+            onAddIncome={handleAddIncome}
+            onRemoveIncome={handleRemoveIncome}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            selectedCurrency={selectedCurrency}
+            theme={theme}
+          />
+        )}
+
+        {activeTab === 'goals' && (
+          <GoalsTab 
+            goals={goals}
+            onAddGoal={handleAddGoal}
+            onRemoveGoal={handleRemoveGoal}
+            totalSavings={netSavings}
+            selectedCurrency={selectedCurrency}
+            theme={theme}
+          />
+        )}
+
+        {activeTab === 'tips' && (
+          <SavingTipsTab 
+            totalIncome={totalIncome}
+            totalExpenses={totalExpenses}
+            goals={goals}
+            categoryBudgets={categoryBudgets}
+            selectedCurrency={selectedCurrency}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            theme={theme}
+          />
+        )}
+
+        {activeTab === 'currency' && (
+          <div className="max-w-2xl mx-auto animate-fadeIn">
+            <CurrencyConverter theme={theme} />
+          </div>
+        )}
+
+        {activeTab === 'profile' && (
+          <ProfileTab 
+            theme={theme}
+            selectedCurrency={selectedCurrency}
+            setSelectedCurrency={setSelectedCurrency}
+            CURRENCIES={CURRENCIES}
+          />
+        )}
+
+      </main>
     </div>
   );
 };
+
+export default DashboardPage;

@@ -1,141 +1,141 @@
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { registerUser } from '../redux/slices/authSlice.jsx';
+import { supabase } from '../utils/supabase';
+import ThemeToggle from './ThemeToggle';
+import budgetEaseLogo from '../assets/budgetease logo.png';
 
-const RegisterPage = () => {
-  const [name, setName] = useState('');
-  const [username, setUsername] = useState('');
+const RegisterPage = ({ onAuthSuccess, onNavigate, theme, toggleTheme }) => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [username, setUsername] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
-
-  const handleSubmit = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
 
-    if (password !== confirmPassword) {
-      setMessage("Passwords do not match.");
-      return;
+    const { data, error: sbError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          username: username,
+          currency: 'USD',
+        }
+      }
+    });
+
+    if (sbError) {
+      setError(sbError.message);
+    } else {
+      localStorage.setItem('token', data.session.access_token);
+      onAuthSuccess();
     }
-
-    if (password.length < 6) {
-      setMessage("Password must be at least 6 characters long.");
-      return;
-    }
-
-    setMessage(''); // Clear previous messages
-    dispatch(registerUser({ name, username, password }));
+    setLoading(false);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="w-full max-w-sm p-8 space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Create an Account
-          </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Join the BudgetEase community.
-          </p>
+    <div className={`min-h-screen flex items-center justify-center p-4 font-sans selection:bg-emerald-500/30 transition-colors duration-300 ${theme === 'dark' ? 'bg-slate-950 text-slate-200' : 'bg-gray-50 text-gray-900'}`}>
+      <div className="w-full max-w-md relative animate-fadeIn">
+
+        <div className="fixed top-8 right-8 z-50">
+          <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
         </div>
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+
+        <div className="flex flex-col items-center mb-10">
+          <img src={budgetEaseLogo} alt="BudgetEase" className="h-24 sm:h-32 w-auto mb-6 drop-shadow-2xl hover:scale-105 transition-transform" />
+          <h1 className="text-3xl font-extrabold font-['Outfit'] mb-2 tracking-tight">Create Account</h1>
+          <p className={`font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Join BudgetEase to start saving today.</p>
+        </div>
+
+        <div className={`rounded-3xl p-8 sm:p-10 border shadow-2xl backdrop-blur-md ${theme === 'dark' ? 'bg-slate-900/90 border-slate-800' : 'bg-white/90 border-gray-200'}`}>
+          {error && (
+            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-semibold p-4 rounded-xl mb-6 text-center">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleRegister} className="space-y-5">
+            <div>
+              <label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`} htmlFor="username">
+                Display Name
+              </label>
+              <input
+                className={`w-full px-4 py-3.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors font-medium ${theme === 'dark'
+                  ? 'bg-slate-950/50 border-slate-700 text-white placeholder-slate-600 focus:bg-slate-950'
+                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:bg-white'
+                  }`}
+                id="username"
+                type="text"
+                placeholder="How should we call you?"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`} htmlFor="email">
+                Email Address
+              </label>
+              <input
+                className={`w-full px-4 py-3.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors font-medium ${theme === 'dark'
+                  ? 'bg-slate-950/50 border-slate-700 text-white placeholder-slate-600 focus:bg-slate-950'
+                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:bg-white'
+                  }`}
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className={`block text-sm font-bold mb-2 uppercase tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`} htmlFor="password">
+                Password
+              </label>
+              <input
+                className={`w-full px-4 py-3.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors font-medium tracking-widest ${theme === 'dark'
+                  ? 'bg-slate-950/50 border-slate-700 text-white placeholder-slate-600 focus:bg-slate-950'
+                  : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:bg-white'
+                  }`}
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-lg py-4 px-4 rounded-xl transition duration-300 shadow-xl shadow-emerald-500/20 flex justify-center items-center mt-4"
+              type="submit"
+              disabled={loading}
             >
-              Full Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-50 dark:bg-gray-700 dark:text-white"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+              {loading ? (
+                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : 'Sign Up'}
+            </button>
+          </form>
+
+          <div className="mt-8 text-center pt-6 border-t border-gray-200 dark:border-slate-800">
+            <p className={`font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>
+              Already have an account?{' '}
+              <button
+                onClick={() => onNavigate('login')}
+                className="font-bold text-emerald-500 hover:text-emerald-400 transition-colors"
+              >
+                Sign in
+              </button>
+            </p>
           </div>
-          <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-50 dark:bg-gray-700 dark:text-white"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-50 dark:bg-gray-700 dark:text-white"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="confirm-password"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Confirm Password
-            </label>
-            <input
-              id="confirm-password"
-              name="confirm-password"
-              type="password"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-gray-50 dark:bg-gray-700 dark:text-white"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          </div>
-          <div className="min-h-[2rem]">
-            {message && (
-              <p className="text-sm font-medium text-red-500 text-center">
-                {message}
-              </p>
-            )}
-            {error && (
-              <p className="text-sm font-medium text-red-500 text-center">
-                {error}
-              </p>
-            )}
-          </div>
-          <button
-            type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"
-            disabled={loading}
-          >
-            {loading ? 'Creating Account...' : 'Sign Up'}
-          </button>
-        </form>
-        <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-          <a
-            href="/login"
-            className="font-medium text-primary-600 hover:text-primary-500"
-          >
-            Already have an account? Sign in.
-          </a>
         </div>
       </div>
     </div>
