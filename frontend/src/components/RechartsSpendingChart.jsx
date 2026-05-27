@@ -4,8 +4,8 @@ import {
   PieChart, Pie, Cell, Legend
 } from 'recharts';
 
-// Luxury palette for charts
-const COLORS = ['#d4af37', '#e6c365', '#b8942b', '#8f701c', '#fceda8', '#f8f9fa', '#adb5bd'];
+// Luxury muted palette (Charcoals, Navy, Muted Metallics)
+const COLORS = ['#1C314A', '#2d3748', '#4a5568', '#718096', '#a0aec0', '#e2e8f0', '#d4af37'];
 
 const RechartsSpendingChart = ({ expenses, categoryBudgets, selectedCurrency }) => {
   const [chartType, setChartType] = useState('bar'); // 'bar' or 'pie'
@@ -38,7 +38,7 @@ const RechartsSpendingChart = ({ expenses, categoryBudgets, selectedCurrency }) 
           <p className="font-serif text-lg tracking-wide mb-3">{label || payload[0].name}</p>
           {payload.map((entry, index) => (
             <div key={index} className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-platinum-300 mb-1">
-              <div className="w-2 h-2 rounded-full shadow-[0_0_5px_rgba(212,175,55,0.5)]" style={{ backgroundColor: entry.color }} />
+              <div className="w-2 h-2 rounded-full shadow-[0_0_5px_rgba(255,255,255,0.2)]" style={{ backgroundColor: entry.color }} />
               <span className="flex-1">{entry.name}:</span>
               <span className="text-white font-serif tracking-normal text-sm">{formatCurrency(entry.value)}</span>
             </div>
@@ -58,26 +58,26 @@ const RechartsSpendingChart = ({ expenses, categoryBudgets, selectedCurrency }) 
   }
 
   return (
-    <div className="glass-card p-6 sm:p-10 rounded-2xl relative border-gold-gradient">
+    <div className="glass-card p-6 sm:p-10 rounded-2xl relative border-gold-gradient h-full flex flex-col">
       <div className="flex justify-between items-center mb-8 border-b border-obsidian-700/50 pb-4">
         <h3 className="text-2xl font-serif text-white tracking-wide">Wealth Distribution</h3>
         <div className="flex rounded-lg p-1 bg-obsidian-900 border border-obsidian-700">
           <button 
             onClick={() => setChartType('bar')}
-            className={`px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded-md transition-all ${chartType === 'bar' ? 'bg-obsidian-700 text-gold-400 shadow-sm' : 'text-platinum-500 hover:text-platinum-300'}`}
+            className={`px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded-md transition-all ${chartType === 'bar' ? 'bg-obsidian-700 text-platinum-100 shadow-sm' : 'text-platinum-500 hover:text-platinum-300'}`}
           >
             Compare
           </button>
           <button 
             onClick={() => setChartType('pie')}
-            className={`px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded-md transition-all ${chartType === 'pie' ? 'bg-obsidian-700 text-gold-400 shadow-sm' : 'text-platinum-500 hover:text-platinum-300'}`}
+            className={`px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded-md transition-all ${chartType === 'pie' ? 'bg-obsidian-700 text-platinum-100 shadow-sm' : 'text-platinum-500 hover:text-platinum-300'}`}
           >
             Breakdown
           </button>
         </div>
       </div>
 
-      <div className="h-72 w-full mt-4">
+      <div className="flex-1 min-h-[300px] w-full mt-4">
         <ResponsiveContainer width="100%" height="100%">
           {chartType === 'bar' ? (
             <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -86,8 +86,8 @@ const RechartsSpendingChart = ({ expenses, categoryBudgets, selectedCurrency }) 
               <YAxis axisLine={false} tickLine={false} tick={{ fill: '#adb5bd', fontSize: 10, fontFamily: 'Outfit' }} tickFormatter={(value) => value > 0 ? value : ''} />
               <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: '#1a1a1a' }} />
               <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '12px', fontFamily: 'Outfit', color: '#adb5bd' }} />
-              <Bar dataKey="Budget" fill="#2d2d2d" radius={[4, 4, 0, 0]} barSize={20} />
-              <Bar dataKey="Spent" fill="#d4af37" radius={[4, 4, 0, 0]} barSize={20} />
+              <Bar dataKey="Budget" fill="#1C314A" radius={[4, 4, 0, 0]} barSize={20} />
+              <Bar dataKey="Spent" fill="#718096" radius={[4, 4, 0, 0]} barSize={20} />
             </BarChart>
           ) : (
             <PieChart>

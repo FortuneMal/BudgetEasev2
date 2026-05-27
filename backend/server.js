@@ -1,208 +1,255 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { createClient } = require('@supabase/supabase-js');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const mongoURI = 'mongodb://localhost:27017/budgetease';
-const jwtSecret = 'your_jwt_secret'; // Use a proper secret in production
 
-// Middleware
-app.use(express.json());
+// Initialize Supabase Client
+// Note: In production, strictly use environment variables
+const supabaseUrl = process.env.SUPABASE_URL || 'https://your-project.supabase.co';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'your-anon-key';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// ==========================================
+// SECURITY & RELIABILITY MIDDLEWARE (ELEVATED)
+// ==========================================
+
+// 1. Helmet: Sets secure HTTP headers to protect against common web vulnerabilities
+app.use(helmet());
+
+// 2. Body Parser & CORS
+app.use(express.json({ limit: '10kb' })); // Restrict payload size
 app.use(cors());
 
-// Connect to MongoDB
-mongoose.connect(mongoURI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-// Expense Schema and Model
-const expenseSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  name: { type: String, required: true },
-  amount: { type: Number, required: true },
-  category: { type: String, required: true },
-  isRecurring: { type: Boolean, default: false },
-  date: { type: Date, default: Date.now }
+// 3. Rate Limiting: Prevents brute-force and DDoS attacks
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true, 
+  legacyHeaders: false, 
+  message: { success: false, error: 'Too many requests originating from this IP, please try again after 15 minutes' }
 });
-const Expense = mongoose.model('Expense', expenseSchema);
 
-// User Schema and Model
-const userSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
-});
-const User = mongoose.model('User', userSchema);
+// Apply rate limiting specifically to authentication routes
+app.use('/api/auth/', apiLimiter);
 
-// Auth Middleware
-function auth(req, res, next) {
-  const token = req.header('x-auth-token');
+// ==========================================
+// AUTHENTICATION MIDDLEWARE
+// ==========================================
+async function auth(req, res, next) {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
   if (!token) {
-    return res.status(401).json({ msg: 'No token, authorization denied' });
+    return res.status(401).json({ success: false, error: 'No token, authorization denied' });
   }
+  
   try {
-    const decoded = jwt.verify(token, jwtSecret);
-    req.user = decoded.user;
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error) {
+      return next(error); // Pass to global error handler
+    }
+    req.user = user;
     next();
   } catch (e) {
-    res.status(401).json({ msg: 'Token is not valid' });
+    next(e);
   }
 }
 
-// Routes
+// ==========================================
+// ROUTES (Now powered by Supabase)
+// ==========================================
+
 // User Registration
 app.post('/api/auth/register',
   [
-    check('email', 'Please include a valid email').isEmail(),
+    check('email', 'Please include a valid email').isEmail().normalizeEmail(),
     check('password', 'Password must be 6 or more characters').isLength({ min: 6 })
   ],
-  async (req, res) => {
+  async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ success: false, errors: errors.array() });
     }
+    
     const { email, password } = req.body;
     try {
-      let user = await User.findOne({ email });
-      if (user) {
-        return res.status(400).json({ msg: 'User already exists' });
-      }
-      user = new User({ email, password });
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
-      await user.save();
-      const payload = { user: { id: user.id } };
-      jwt.sign(payload, jwtSecret, { expiresIn: '1h' }, (err, token) => {
-        if (err) throw err;
-        res.json({ token });
-      });
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) return next(error);
+      
+      res.status(201).json({ success: true, data });
     } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
+      next(err);
     }
   }
 );
 
 // User Login
-app.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    let user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ msg: 'Invalid credentials' });
+app.post('/api/auth/login', 
+  [
+    check('email', 'Please include a valid email').isEmail().normalizeEmail(),
+    check('password', 'Password is required').exists()
+  ],
+  async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array() });
+
+    const { email, password } = req.body;
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return next(error);
+      
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
     }
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ msg: 'Invalid credentials' });
-    }
-    const payload = { user: { id: user.id } };
-    jwt.sign(payload, jwtSecret, { expiresIn: '1h' }, (err, token) => {
-      if (err) throw err;
-      res.json({ token });
-    });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
 });
 
-// Get user expenses with search, filter, and sort
-app.get('/api/expenses', auth, async (req, res) => {
+// Get user expenses
+app.get('/api/expenses', auth, async (req, res, next) => {
   try {
     const { category, sort, search } = req.query;
-    const filter = { user: req.user.id };
-    const sortOptions = {};
+    
+    let query = supabase
+      .from('expenses')
+      .select('*')
+      .eq('user_id', req.user.id);
 
-    // Filter by category
     if (category && category !== 'All') {
-      filter.category = category;
+      query = query.eq('category', category);
     }
-
-    // Search by name or category (case-insensitive)
+    
     if (search) {
-      const searchRegex = new RegExp(search, 'i');
-      filter.$or = [{ name: searchRegex }, { category: searchRegex }];
+      // Supabase ilike operator for case-insensitive search
+      query = query.or(`name.ilike.%${search}%,category.ilike.%${search}%`);
     }
 
-    // Sort options
     if (sort === 'date_desc') {
-      sortOptions.date = -1;
+      query = query.order('created_at', { ascending: false });
     } else if (sort === 'amount_desc') {
-      sortOptions.amount = -1;
+      query = query.order('amount', { ascending: false });
     } else {
-      sortOptions.date = -1; // Default sort
+      query = query.order('created_at', { ascending: false });
     }
 
-    const expenses = await Expense.find(filter).sort(sortOptions);
-    res.json(expenses);
+    const { data, error } = await query;
+    if (error) return next(error);
+    
+    res.json({ success: true, data });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    next(err);
   }
 });
 
 // Add a new expense
-app.post('/api/expenses', auth, async (req, res) => {
-  const { name, amount, category, isRecurring } = req.body;
-  try {
-    const newExpense = new Expense({
-      user: req.user.id,
-      name,
-      amount,
-      category,
-      isRecurring
-    });
-    const expense = await newExpense.save();
-    res.json(expense);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
+app.post('/api/expenses', auth, 
+  [
+    check('name', 'Name is required').not().isEmpty().trim().escape(),
+    check('amount', 'Amount is required and must be numeric').isNumeric(),
+    check('category', 'Category is required').not().isEmpty().trim().escape()
+  ],
+  async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array() });
+
+    const { name, amount, category, isRecurring } = req.body;
+    try {
+      const newExpense = {
+        user_id: req.user.id,
+        name,
+        amount: parseFloat(amount),
+        category,
+        isRecurring: !!isRecurring
+      };
+
+      const { data, error } = await supabase
+        .from('expenses')
+        .insert([newExpense])
+        .select();
+
+      if (error) return next(error);
+      
+      res.status(201).json({ success: true, data: data[0] });
+    } catch (err) {
+      next(err);
+    }
 });
 
 // Update an expense
-app.put('/api/expenses/:id', auth, async (req, res) => {
-  const { name, amount, category } = req.body;
-  const updatedExpense = { name, amount, category };
-  try {
-    const expense = await Expense.findByIdAndUpdate(
-      req.params.id,
-      { $set: updatedExpense },
-      { new: true }
-    );
-    if (!expense) {
-      return res.status(404).json({ msg: 'Expense not found' });
+app.put('/api/expenses/:id', auth, 
+  [
+    check('name', 'Name is required').optional().not().isEmpty().trim().escape(),
+    check('amount', 'Amount must be numeric').optional().isNumeric(),
+    check('category', 'Category is required').optional().not().isEmpty().trim().escape()
+  ],
+  async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array() });
+
+    const { name, amount, category, isRecurring } = req.body;
+    const updatedFields = {};
+    if (name) updatedFields.name = name;
+    if (amount) updatedFields.amount = parseFloat(amount);
+    if (category) updatedFields.category = category;
+    if (isRecurring !== undefined) updatedFields.isRecurring = !!isRecurring;
+
+    try {
+      const { data, error } = await supabase
+        .from('expenses')
+        .update(updatedFields)
+        .eq('id', req.params.id)
+        .eq('user_id', req.user.id)
+        .select();
+
+      if (error) return next(error);
+      if (!data || data.length === 0) {
+        return res.status(404).json({ success: false, error: 'Expense not found or unauthorized' });
+      }
+      
+      res.json({ success: true, data: data[0] });
+    } catch (err) {
+      next(err);
     }
-    res.json(expense);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
 });
 
 // Delete an expense
-app.delete('/api/expenses/:id', auth, async (req, res) => {
+app.delete('/api/expenses/:id', auth, async (req, res, next) => {
   try {
-    const expense = await Expense.findById(req.params.id);
-    if (!expense) {
-      return res.status(404).json({ msg: 'Expense not found' });
+    const { data, error } = await supabase
+      .from('expenses')
+      .delete()
+      .eq('id', req.params.id)
+      .eq('user_id', req.user.id)
+      .select();
+
+    if (error) return next(error);
+    if (!data || data.length === 0) {
+      return res.status(404).json({ success: false, error: 'Expense not found or unauthorized' });
     }
-    if (expense.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
-    }
-    await Expense.findByIdAndDelete(req.params.id);
-    res.json({ msg: 'Expense removed' });
+    
+    res.json({ success: true, message: 'Expense removed securely' });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    next(err);
   }
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// ==========================================
+// FALLBACK AND GLOBAL ERROR HANDLERS
+// ==========================================
+
+// Fallback for 404 Not Found
+app.use((req, res, next) => {
+  const error = new Error('Not Found');
+  error.statusCode = 404;
+  next(error); 
 });
 
+// Global Error Handler (MUST BE LAST)
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+  console.log(`Secure Postgres/Supabase Server is running on port ${PORT}`);
+});
