@@ -237,6 +237,49 @@ app.delete('/api/expenses/:id', auth, async (req, res, next) => {
 });
 
 // ==========================================
+// AI PROXY ROUTES (Forward to Python Microservice)
+// ==========================================
+
+// Categorize transaction via Groq
+app.post('/api/ai/categorize', auth, async (req, res, next) => {
+  try {
+    const { natural_language_input } = req.body;
+    // Internal network call to the Python service running on port 8000
+    const response = await fetch('http://localhost:8000/categorize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ natural_language_input })
+    });
+    
+    if (!response.ok) throw new Error('AI Service failed to categorize transaction');
+    
+    const data = await response.json();
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Parse Receipt via OpenAI Vision
+app.post('/api/ai/parse-receipt', auth, async (req, res, next) => {
+  try {
+    const { storage_url } = req.body;
+    const response = await fetch('http://localhost:8000/parse-receipt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ storage_url })
+    });
+
+    if (!response.ok) throw new Error('AI Service failed to parse receipt');
+    
+    const data = await response.json();
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ==========================================
 // FALLBACK AND GLOBAL ERROR HANDLERS
 // ==========================================
 

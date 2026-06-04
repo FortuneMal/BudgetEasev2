@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { ShoppingCart, Zap, Film, Home, Coffee, Activity, Edit2, Trash2, Plus } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { supabase } from '../utils/supabase';
+import { ShoppingCart, Zap, Film, Home, Coffee, Activity, Edit2, Trash2, Wand2, UploadCloud, Loader2 } from 'lucide-react';
 
 const ExpensesTab = ({ expenses, onAddExpense, onUpdateExpense, onDeleteExpense, categoryBudgets, onSetBudget, selectedCurrency }) => {
   const categories = ['Groceries', 'Utilities', 'Entertainment', 'Transportation', 'Home', 'Housing & Rent', 'Other'];
@@ -15,12 +16,118 @@ const ExpensesTab = ({ expenses, onAddExpense, onUpdateExpense, onDeleteExpense,
   const [category, setCategory] = useState('Groceries');
   const [isRecurring, setIsRecurring] = useState(false);
 
+  // AI State
+  const [smartInput, setSmartInput] = useState('');
+  const [isCategorizing, setIsCategorizing] = useState(false);
+  const [isParsingReceipt, setIsParsingReceipt] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  const fileInputRef = useRef(null);
+
   // Budget Form State
   const [budgetCategory, setBudgetCategory] = useState(categories[0]);
   const [budgetAmount, setBudgetAmount] = useState('');
 
   const formatCurrency = (val) => new Intl.NumberFormat(navigator.language, { style: 'currency', currency: selectedCurrency }).format(val);
 
+  // AI Methods
+  const getAuthToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token;
+  };
+
+  const handleSmartCategorize = async (e) => {
+    e.preventDefault();
+    if (!smartInput.trim()) return;
+    
+    setIsCategorizing(true);
+    setAiError(null);
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('http://localhost:5000/api/ai/categorize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ natural_language_input: smartInput })
+      });
+      
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'AI Failed');
+
+      const data = result.data;
+      // Pre-fill form
+      setName(data.merchant || 'Unknown');
+      setAmount(data.amount?.toString() || '');
+      setCategory(categories.includes(data.category) ? data.category : 'Other');
+      setIsRecurring(data.isRecurring || false);
+      setSmartInput('');
+      
+      // Auto-submit immediately for magical UX
+      onAddExpense({ 
+        name: data.merchant || 'Unknown', 
+        amount: parseFloat(data.amount || 0), 
+        category: categories.includes(data.category) ? data.category : 'Other', 
+        isRecurring: data.isRecurring || false 
+      });
+
+    } catch (err) {
+      setAiError(err.message);
+    } finally {
+      setIsCategorizing(false);
+    }
+  };
+
+  const handleReceiptUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsParsingReceipt(true);
+    setAiError(null);
+
+    try {
+      // 1. Upload to Supabase Storage
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      if (!userId) throw new Error('Not authenticated');
+
+      const fileName = `${userId}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('receipts')
+        .upload(fileName, file);
+
+      if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
+
+      // 2. Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('receipts')
+        .getPublicUrl(fileName);
+
+      // 3. Send URL to Backend AI parser
+      const token = session.access_token;
+      const res = await fetch('http://localhost:5000/api/ai/parse-receipt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ storage_url: publicUrl })
+      });
+
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'AI Failed');
+
+      const data = result.data;
+      // Pre-fill form (wait for user confirmation instead of auto-submitting for receipts)
+      setName(data.merchant || 'Scanned Receipt');
+      setAmount(data.amount?.toString() || '');
+      setCategory(categories.includes(data.category) ? data.category : 'Other');
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (err) {
+      setAiError(err.message);
+    } finally {
+      setIsParsingReceipt(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // Standard Form Handlers
   const handleExpenseSubmit = (e) => {
     e.preventDefault();
     if (!name || !amount) return;
@@ -64,13 +171,78 @@ const ExpensesTab = ({ expenses, onAddExpense, onUpdateExpense, onDeleteExpense,
   return (
     <div className="space-y-10 animate-fadeIn max-w-5xl mx-auto relative z-10">
       
+      {aiError && (
+        <div className="p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl font-medium shadow-lg backdrop-blur-sm">
+          Intelligent Processing Error: {aiError}
+        </div>
+      )}
+
+      {/* INTELLIGENT INPUT SECTION */}
+      {!editingId && (
+        <div className="glass-card p-6 rounded-2xl relative border-gold-gradient overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Wand2 size={100} />
+          </div>
+          <h3 className="text-xl font-serif text-white mb-4 tracking-wide flex items-center gap-2">
+            <Wand2 size={20} className="text-gold-500" />
+            Intelligent Capture
+          </h3>
+          
+          <div className="flex flex-col md:flex-row gap-6">
+            <form onSubmit={handleSmartCategorize} className="flex-1 relative">
+              <input
+                type="text"
+                value={smartInput}
+                onChange={(e) => setSmartInput(e.target.value)}
+                placeholder="e.g. 'Uber to the airport for $45' or 'Groceries at Woolworths R1200'"
+                className="w-full rounded-xl pl-4 pr-12 py-4 bg-obsidian-900/80 border border-obsidian-600 text-white placeholder-obsidian-500 focus:outline-none focus:border-gold-500 transition-colors font-medium shadow-inner"
+                disabled={isCategorizing}
+              />
+              <button 
+                type="submit" 
+                disabled={isCategorizing || !smartInput}
+                className="absolute right-2 top-2 bottom-2 aspect-square rounded-lg bg-gold-gradient flex items-center justify-center text-obsidian-900 hover:opacity-90 disabled:opacity-50 transition-all"
+              >
+                {isCategorizing ? <Loader2 size={18} className="animate-spin" /> : <Activity size={18} />}
+              </button>
+            </form>
+
+            <div className="hidden md:block w-px bg-obsidian-700"></div>
+
+            <div 
+              className="flex-1 rounded-xl border border-dashed border-obsidian-600 bg-obsidian-900/50 hover:bg-obsidian-800/80 hover:border-gold-500 transition-all cursor-pointer flex flex-col items-center justify-center p-4 relative"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {isParsingReceipt ? (
+                <div className="flex items-center gap-3 text-gold-500">
+                  <Loader2 size={24} className="animate-spin" />
+                  <span className="font-bold text-xs uppercase tracking-widest">Scanning Receipt...</span>
+                </div>
+              ) : (
+                <>
+                  <UploadCloud size={24} className="text-platinum-400 mb-2" />
+                  <span className="font-bold text-[10px] uppercase tracking-widest text-platinum-400">Upload Receipt or Invoice</span>
+                </>
+              )}
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept="image/*,.pdf" 
+                onChange={handleReceiptUpload} 
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* TOP ROW: SET BUDGET & ADD EXPENSE FORMS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         
-        {/* ADD / EDIT EXPENSE FORM */}
-        <div className="glass-card p-6 sm:p-10 rounded-2xl relative border-gold-gradient">
+        {/* MANUAL EXPENSE FORM */}
+        <div className="glass-card p-6 sm:p-10 rounded-2xl relative border border-obsidian-700/50 shadow-2xl bg-obsidian-800/60">
           <h3 className="text-2xl font-serif text-white mb-8 tracking-wide border-b border-obsidian-700/50 pb-4">
-            {editingId ? 'Modify Ledger Entry' : 'New Ledger Entry'}
+            {editingId ? 'Modify Ledger Entry' : 'Manual Entry'}
           </h3>
           <form onSubmit={handleExpenseSubmit} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
