@@ -1,103 +1,118 @@
-# 💰 BudgetEase | Personal Finance Intelligence
+# BudgetEase | Personal Finance Intelligence
 
-[](https://opensource.org/licenses/MIT)
-[](https://budget-easev2.vercel.app/)
-[](https://supabase.com/)
-[](https://reactjs.org/)
+[![Live App](https://img.shields.io/badge/Live-App-success)](https://budget-easev2.vercel.app/)
+[![Supabase](https://img.shields.io/badge/Backend-Supabase-3ECF8E)](https://supabase.com/)
+[![React](https://img.shields.io/badge/Frontend-React-61DAFB)](https://reactjs.org/)
 
-**BudgetEase** is a high-performance, full-stack financial management platform designed to provide users with granular control over their economic health. By leveraging real-time data visualization and secure cloud infrastructure, BudgetEase transforms raw transaction data into actionable financial insights.
+BudgetEase is a full-stack personal finance management platform designed to give users granular control over their financial health, combining budgeting, expense tracking, and savings goals with AI-assisted expense entry.
 
-🔗 **Live Application:** [budget-easev2.vercel.app](https://budget-easev2.vercel.app/)  
-📂 **Source Code:** [github.com/FortuneMal/BudgetEasev2](https://github.com/FortuneMal/BudgetEasev2)
+**Live Application:** [budget-easev2.vercel.app](https://budget-easev2.vercel.app/)
+**Source Code:** [github.com/FortuneMal/BudgetEasev2](https://github.com/FortuneMal/BudgetEasev2)
 
------
+---
 
-## 🚀 Core Capabilities
+## Core Capabilities
 
-  * **Secure Identity Management:** Seamless user onboarding and session persistence powered by **Supabase Auth**.
-  * **Precision Expense Tracking:** Real-time logging with intelligent categorization for daily expenditures.
-  * **Targeted Budgeting:** Category-specific threshold monitoring to prevent overspending and optimize cash flow.
-  * **Savings Orchestration:** Visual goal-setting modules to track progress toward long-term capital accumulation.
-  * **Global Currency Utility:** Integrated multi-currency conversion leveraging real-time exchange rate APIs.
-  * **Interactive Analytics:** Dynamic data storytelling through **Recharts**, providing clarity on spending velocity and distribution.
+- **Secure Identity Management:** User onboarding and session persistence powered by Supabase Auth.
+- **AI-Assisted Expense Entry:** A FastAPI microservice uses Groq (Llama 3) to parse natural-language expense descriptions into structured amount, merchant, and category data, and OpenAI's GPT-4o vision to extract the same details directly from a photographed receipt.
+- **Precision Expense Tracking:** Real-time logging with intelligent categorization for daily expenditures.
+- **Targeted Budgeting:** Category-specific threshold monitoring to help prevent overspending and manage cash flow.
+- **Savings Orchestration:** Visual goal-setting modules to track progress toward savings targets.
+- **Global Currency Utility:** Multi-currency conversion using a live exchange rate API.
+- **Interactive Analytics:** Spending visualizations built with Recharts, covering spending trends and category distribution.
 
------
+---
 
-## 🛠 Tech Stack & Architecture
+## Tech Stack and Architecture
 
-### Frontend Layer
+### Frontend
 
-  * **React.js (Vite):** Core library for building a highly responsive, component-based UI.
-  * **Redux Toolkit:** Enterprise-grade state management for consistent data flow across modules.
-  * **Tailwind CSS:** Utility-first framework for a clean, professional, and mobile-responsive interface.
-  * **Recharts:** Composable charting library for high-fidelity financial visualizations.
+- **React (Vite):** Core library for the component-based UI.
+- **Redux Toolkit:** State management across modules.
+- **Tailwind CSS:** Utility-first styling for a responsive interface.
+- **Recharts:** Charting library for the analytics views.
 
-### Backend & Database (BaaS)
+### Backend and Data
 
-  * **Supabase:** Serves as the primary backend infrastructure, providing:
-      * **PostgreSQL:** Relational database for robust data integrity.
-      * **Auto-generated APIs:** High-speed RESTful interfaces for data operations.
-  * **Node.js & Express:** Custom middleware for specialized business logic and third-party integrations.
+- **Supabase:** Primary backend infrastructure — PostgreSQL database, authentication, and auto-generated REST APIs. This is what the deployed app actually runs on.
+- **AI Service (FastAPI/Python):** A separate microservice (`ai_service/`) handling expense categorization (Groq/Llama 3) and receipt parsing (OpenAI GPT-4o vision).
 
-### Deployment & CI/CD
+> **Note:** An earlier version of this project used a Node.js/Express backend with MongoDB (still present under `backend/` for reference). The live application has since migrated to Supabase for the database and auth layer, and that Node/Mongo backend is no longer part of the active app.
 
-  * **Vercel:** Optimized hosting for the React frontend with automated deployment pipelines.
-  * **Supabase Cloud:** Scalable managed database and authentication services.
+### Deployment
 
------
+- **Vercel:** Hosting for the React frontend with automated deployments.
+- **Supabase Cloud:** Managed database and authentication.
 
-## 🔧 Installation & Environment Configuration
+---
+
+## Installation and Environment Configuration
 
 ### Prerequisites
 
-  * Node.js (v18.0 or higher)
-  * Supabase Account
+- Node.js (v18.0 or higher)
+- Supabase account
+- Python 3.10+ (for the AI service, optional)
 
 ### Setup
 
-1.  **Clone the Repository:**
+1. Clone the repository:
 
-    ```bash
-    git clone https://github.com/FortuneMal/BudgetEasev2.git
-    cd BudgetEasev2
-    ```
+```bash
+git clone https://github.com/FortuneMal/BudgetEasev2.git
+cd BudgetEasev2
+```
 
-2.  **Install Dependencies:**
+2. Install frontend dependencies:
 
-    ```bash
-    npm install
-    ```
+```bash
+cd frontend
+npm install
+```
 
-3.  **Environment Configuration:**
-    Create a `.env` file in the root directory:
+3. Create a `.env` file in `frontend/`:
 
-    ```env
-    VITE_SUPABASE_URL=your_project_url
-    VITE_SUPABASE_ANON_KEY=your_anon_key
-    VITE_BACKEND_URL=https://your-api-link.com
-    ```
+```env
+VITE_SUPABASE_URL=your_project_url
+VITE_SUPABASE_ANON_KEY=your_anon_key
+```
 
-4.  **Launch Development Environment:**
+4. Launch the development environment:
 
-    ```bash
-    npm run dev
-    ```
+```bash
+npm run dev
+```
 
------
+5. (Optional) Run the AI service:
 
-## 📈 Roadmap & Evolution
+```bash
+cd ai_service
+pip install -r requirements.txt
+```
 
-  * **Automated Reconciliation:** Integration with Plaid for direct bank feed synchronization.
-  * **AI-Powered Insights:** Predictive spending analysis and personalized saving recommendations.
-  * **Comprehensive Reporting:** PDF generation for monthly financial statements and tax summaries.
-  * **Income Stream Management:** Expanded modules for tracking diversified revenue sources.
+Create a `.env` file in `ai_service/` with your API keys:
 
------
+```env
+GROQ_API_KEY=your_groq_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+```
 
-## 📄 License
+Then start the service:
 
-This project is licensed under the **MIT License**. See the `LICENSE` file for full documentation.
+```bash
+python main.py
+```
 
------
+The AI service runs on `http://localhost:8000` and exposes `/categorize` and `/parse-receipt`. Without API keys set, both endpoints return mock data so the UI remains usable during development.
 
-**Developed with precision by [Fortune](https://www.google.com/search?q=https://github.com/FortuneMal)**
+---
+
+## Roadmap
+
+- **Automated Reconciliation:** Integration with Plaid for direct bank feed synchronization.
+- **Comprehensive Reporting:** PDF generation for monthly financial statements and tax summaries.
+- **Income Stream Management:** Expanded modules for tracking diversified revenue sources.
+
+---
+
+Developed by [Fortune Malaza](https://github.com/FortuneMal)
